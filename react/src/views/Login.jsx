@@ -24,13 +24,13 @@ export default function Login() {
       })
       .catch((error) => {
         if (error.response) {
-          const finalErrors = Object.values(error.response.data.errors).reduce(
-            (accum, next) => [...accum, ...next],
-            []
-          );
-          setError({ __html: finalErrors.join("<br>") });
+          // const finalErrors = Object.values(error.response.data.errors).reduce(
+          //   (accum, next) => [...accum, ...next],
+          //   []
+          // );
+          // setError({ __html: finalErrors.join("<br>") });
         }
-        console.error(error);
+        setError({ __html: error.response.data.error });
       });
   };
 
@@ -41,12 +41,13 @@ export default function Login() {
       </h2>
 
       {/* render error */}
-      {error.__html && (
+      {/* {error.__html && (
         <div
           className="bg-red-500 rounded py-2 px-3 text-white"
           dangerouslySetInnerHTML={error}
         ></div>
-      )}
+      )} */}
+      {/* render error */}
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form
@@ -55,6 +56,12 @@ export default function Login() {
           method="POST"
           className="space-y-6"
         >
+          {/* display error */}
+          <div className="text-red-500 text-center">
+            <i dangerouslySetInnerHTML={error}></i>
+          </div>
+          {/* display error */}
+
           <div>
             <label
               htmlFor="email"
