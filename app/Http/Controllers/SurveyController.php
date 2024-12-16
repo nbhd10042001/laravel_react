@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\FuelTypeEnum;
 use App\Enums\QuestionTypeEnum;
 use App\Http\Resources\SurveyResource;
 use App\Models\Survey;
@@ -25,10 +26,15 @@ class SurveyController extends Controller
     {
         $user = $request->user();
 
+        // return SurveyResource::collection(
+        //     Survey::where('created_at', '>', now())
+        //         ->orderBy('created_at', 'desc')
+        //         ->paginate(6)
+        // );
+
         return SurveyResource::collection(
-            Survey::where('user_id', $user->id)
-                ->orderBy('created_at', 'desc')
-                ->paginate(2)
+            Survey::orderBy('created_at', 'desc')
+                ->paginate(6)
         );
     }
 

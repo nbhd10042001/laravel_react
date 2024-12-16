@@ -16,6 +16,7 @@ import { useEffect } from "react";
 const navigation = [
   { name: "Dashboard", to: "/" },
   { name: "Surveys", to: "/surveys" },
+  { name: "Cars", to: "/cars" },
 ];
 
 const userNavigation = [
