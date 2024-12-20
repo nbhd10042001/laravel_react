@@ -31,6 +31,10 @@ const router = createBrowserRouter([
                 element: <SurveyView />
             },
             {
+                path: '/surveys/:id',
+                element: <SurveyView />
+            },
+            {
                 path: '/cars',
                 element: <Cars />
             },

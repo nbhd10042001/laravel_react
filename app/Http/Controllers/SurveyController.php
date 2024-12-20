@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\FuelTypeEnum;
 use App\Enums\QuestionTypeEnum;
 use App\Http\Resources\SurveyResource;
 use App\Models\Survey;
@@ -22,20 +21,22 @@ class SurveyController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+     // method get
     public function index(Request $request)
     {
         $user = $request->user();
 
-        // return SurveyResource::collection(
-        //     Survey::where('created_at', '>', now())
-        //         ->orderBy('created_at', 'desc')
-        //         ->paginate(6)
-        // );
-
         return SurveyResource::collection(
-            Survey::orderBy('created_at', 'desc')
+            Survey::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
                 ->paginate(6)
         );
+
+        // return SurveyResource::collection(
+        //     Survey::orderBy('created_at', 'desc')
+        //         ->paginate(6)
+        // );
     }
 
     /**
@@ -49,6 +50,8 @@ class SurveyController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
+     // method create
     public function store(StoreSurveyRequest $request)
     {
         $data = $request->validated();
@@ -85,6 +88,8 @@ class SurveyController extends Controller
     /**
      * Display the specified resource.
      */
+    // method get item with {id}
+    // Bạn không cần thực hiện Survey::find($id) một cách thủ công.
     public function show(Survey $survey, Request $request)
     {
         $user = $request->user();
@@ -125,12 +130,21 @@ class SurveyController extends Controller
         $survey->update($data);
 
         // Get ids as plain array of existing questions
-        $existingIds = $survey->questions()->pluck('id')->toArray();
+        // get value from colunm id and convert to array
+        $existingIds = $survey->questions()->pluck('id')->toArray(); // [id1, id2, id3,...]
+        
         // Get ids as plain array of new questions
-        $newIds = Arr::pluck($data['questions'], 'id');
+        // get value from key id of data['questions'] and convert to array
+        $newIds = Arr::pluck($data['questions'], 'id'); // [id4, id5, id6,...]
+        
         // Find questions to delete
+        // arr1 = [1, 2, 3, 4]
+        // arr2 = [2, 3, 5]
+        // result = [1, 4] -> need to delete [1, 4]
         $toDelete = array_diff($existingIds, $newIds);
+
         //Find questions to add
+        // result = [5] -> need to add [5]
         $toAdd = array_diff($newIds, $existingIds);
 
         // Delete questions by $toDelete array
@@ -177,6 +191,26 @@ class SurveyController extends Controller
     }
 
     // other method
+    public function seedSurveys(Request $request)
+    {
+        $user = $request->user();
+
+        // delete fake surveys
+        Survey::where('user_id', $user->id)
+        ->each(function($survey, $key){
+            if(str_contains($survey->title, '[FakeData]')){
+                $survey->delete();
+            }
+        });
+
+        // seed surveys fake with current user_id send this request
+        Survey::factory()->count(10)
+        ->state(['user_id' => $user->id])
+        ->create();
+
+        return response('', 204);
+    }
+
     private function saveImage($image)
     {
         // Check if image is valid base64 string

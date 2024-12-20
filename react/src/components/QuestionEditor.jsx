@@ -23,7 +23,9 @@ export default function QuestionEditor({
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
+  // return true if type is select/radio/checkbox
   function shouldHaveOptions(type = null) {
+    // if param null, then get type from model 
     type = type || model.type;
     return ["select", "radio", "checkbox"].includes(type);
   }
@@ -33,9 +35,13 @@ export default function QuestionEditor({
       ...model,
       type: ev.target.value,
     };
+    // nếu model.type trước đó không thuộc type haveOptions 
+    // và value của thẻ select thuộc type haveOptions  
     if (!shouldHaveOptions(model.type) && shouldHaveOptions(ev.target.value)) {
+      // nếu model chưa có options thì tạo mới options cho modelmodel
       if (!model.data.options) {
         newModel.data = {
+          // uuid: là mã định danh duy nhất
           options: [{ uuid: uuidv4(), text: "" }],
         };
       }
@@ -43,6 +49,7 @@ export default function QuestionEditor({
     setModel(newModel);
   }
 
+  // thêm 1 phần tử mới vào options của model
   function addOption() {
     model.data.options.push({
       uuid: uuidv4(),
@@ -90,7 +97,7 @@ export default function QuestionEditor({
           {/* Question Text */}
           <div className="flex-1">
             <label
-              htmlFor="question"
+              htmlFor={`question_${index}`}
               className="block text-sm font-medium text-gray-700"
             >
               Question
@@ -98,7 +105,7 @@ export default function QuestionEditor({
             <input
               type="text"
               name="question"
-              id={"question_" + index}
+              id={`question_${index}`}
               value={model.question}
               onChange={(ev) => {
                 setModel({ ...model, question: ev.target.value })
@@ -114,21 +121,21 @@ export default function QuestionEditor({
           {/* Question Type */}
           <div>
             <label
-              htmlFor="questionType"
+              htmlFor={`questionType_${index}`}
               className="block text-sm font-medium text-gray-700 w-40"
             >
               Question Type
             </label>
             <select
-              id="questionType"
+              id={`questionType_${index}`}
               name="questionType"
               value={model.type}
               onChange={onTypeChange}
               className="mt-1 block w-full rounded-md border border-gray-300 
                 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             >
-              {questionTypes.map((type) => (
-                <option value={type} key={type}>
+              {questionTypes.map((type, index) => (
+                <option value={type} key={index}>
                   {upperCaseFirst(type)}
                 </option>
               ))}
@@ -140,14 +147,14 @@ export default function QuestionEditor({
         {/*Description*/}
         <div className="mb-3">
           <label
-            htmlFor="questionDescription"
+            htmlFor={`questionDescription_${index}`}
             className="block text-sm font-medium text-gray-700"
           >
             Description
           </label>
           <textarea
             name="questionDescription"
-            id="questionDescription"
+            id={`questionDescription_${index}`}
             value={model.description || ""}
             onChange={(ev) =>
               setModel({ ...model, description: ev.target.value })
@@ -158,6 +165,7 @@ export default function QuestionEditor({
         </div>
         {/*Description*/}
 
+        {/* Options */}
         <div>
           {shouldHaveOptions() && (
             <div>
@@ -181,7 +189,7 @@ export default function QuestionEditor({
               {model.data.options.length > 0 && (
                 <div>
                   {model.data.options.map((op, ind) => (
-                    <div key={op.uuid} className="flex items-center mb-1">
+                    <div key={`op_${op.uuid}`} className="flex items-center mb-1">
                       <span className="w-6 text-sm">{ind + 1}.</span>
                       <input
                         type="text"
@@ -208,7 +216,6 @@ export default function QuestionEditor({
             </div>
           )}
         </div>
-        {model.type === "select" && <div></div>}
       </div>
       <hr />
     </>

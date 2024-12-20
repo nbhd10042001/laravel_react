@@ -20,7 +20,7 @@ class SurveyFactory extends Factory
         return [
             'user_id' => User::inRandomOrder()->first()->id,
             'image' => null,
-            'title' => fake()->title(),
+            'title' => fake()->title()." [FakeData]",
             'slug' => fake()->slug(),
             'status' => true,
             'description' => fake()->text(400),

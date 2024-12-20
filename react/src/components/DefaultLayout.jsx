@@ -11,7 +11,8 @@ import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import axiosClient from "../axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ToastCustom } from "./ToastCustom";
 
 const navigation = [
   { name: "Dashboard", to: "/" },
@@ -32,26 +33,26 @@ function classNames(...classes) {
 export default function DefaultLayout() {
   const imageUrl =
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
-  const { currentUser, userToken, setCurrentUser, setUserToken } = useStateContext();
+  const { currentUser, userToken, setCurrentUser, setUserToken } =
+    useStateContext();
+  const { boxToast } = useStateContext();
 
-  if (!userToken){
-    return <Navigate to="login"></Navigate>
+  if (!userToken) {
+    return <Navigate to="login"></Navigate>;
   }
 
   const logout = (event) => {
     event.preventDefault();
-    axiosClient.post('/logout')
-    .then(res => {
-      setCurrentUser({})
-      setUserToken(null)
-    })
+    axiosClient.post("/logout").then((res) => {
+      setCurrentUser({});
+      setUserToken(null);
+    });
   };
 
   useEffect(() => {
-    axiosClient.get('/me')
-      .then(({data}) => {
-        setCurrentUser(data);
-      })
+    axiosClient.get("/me").then(({ data }) => {
+      setCurrentUser(data);
+    });
   }, []);
 
   return (
@@ -207,6 +208,19 @@ export default function DefaultLayout() {
         {/* Your content */}
         <Outlet></Outlet>
         {/* Your content */}
+
+        <div
+          id="box-toast"
+          className="w-[20rem] fixed right-4 bottom-4 z-50 flex flex-col-reverse"
+        >
+          {boxToast.length > 0 && boxToast.map((toast, index) => {
+            return (
+              <div key={index} id={toast.id}>
+                <ToastCustom message={toast.message} type={toast.type} id={toast.id}></ToastCustom>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </>
   );

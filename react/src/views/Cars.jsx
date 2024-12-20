@@ -16,6 +16,7 @@ export default function Cars() {
 
   const getCars = (url) => {
     url = url || "/car";
+    setLoading(true);
     axiosClient.get(url).then(({ data }) => {
       setProducts(data.data);
       setMeta(data.meta);

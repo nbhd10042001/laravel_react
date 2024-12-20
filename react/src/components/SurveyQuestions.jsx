@@ -62,7 +62,7 @@ export default function ({ questions, onQuestionsUpdate }) {
       {myQuestions.length ? (
         myQuestions.map((q, ind) => (
           <QuestionEditor
-            key={q.id}
+            key={`ques_${q.id}`}
             index={ind}
             question={q}
             questionChange={questionChange}
