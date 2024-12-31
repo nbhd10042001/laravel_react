@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { useEffect } from "react";
 import { useState } from "react";
-import { useStateContext } from "../contexts/ContextProvider";
+import { useStateContext } from "../../contexts/ContextProvider";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export default function QuestionEditor({
@@ -25,7 +25,7 @@ export default function QuestionEditor({
 
   // return true if type is select/radio/checkbox
   function shouldHaveOptions(type = null) {
-    // if param null, then get type from model 
+    // if param null, then get type from model
     type = type || model.type;
     return ["select", "radio", "checkbox"].includes(type);
   }
@@ -35,8 +35,8 @@ export default function QuestionEditor({
       ...model,
       type: ev.target.value,
     };
-    // nếu model.type trước đó không thuộc type haveOptions 
-    // và value của thẻ select thuộc type haveOptions  
+    // nếu model.type trước đó không thuộc type haveOptions
+    // và value của thẻ select thuộc type haveOptions
     if (!shouldHaveOptions(model.type) && shouldHaveOptions(ev.target.value)) {
       // nếu model chưa có options thì tạo mới options cho modelmodel
       if (!model.data.options) {
@@ -108,9 +108,9 @@ export default function QuestionEditor({
               id={`question_${index}`}
               value={model.question}
               onChange={(ev) => {
-                setModel({ ...model, question: ev.target.value })
+                setModel({ ...model, question: ev.target.value });
                 // when input question change, then remove border red
-                ev.target.classList.remove(['border-red-500']) 
+                ev.target.classList.remove(["border-red-500"]);
               }}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
                 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -165,6 +165,27 @@ export default function QuestionEditor({
         </div>
         {/*Description*/}
 
+        {/* Require? */}
+        <div>
+          <input
+            name="isRequire"
+            id={`isRequire_${index}`}
+            type="checkbox"
+            checked={model.is_require}
+            onChange={(ev) =>
+              setModel({ ...model, is_require: ev.target.checked })
+            }
+            className="h-4 w-4 rounded border-gray-300 text-indigo-600 
+                    focus:ring-indigo-500 mr-4"
+          ></input>
+          <label
+            htmlFor={`isRequire_${index}`}
+            className="text-sm font-medium text-gray-700"
+          >
+            Required to fill?
+          </label>
+        </div>
+
         {/* Options */}
         <div>
           {shouldHaveOptions() && (
@@ -189,7 +210,10 @@ export default function QuestionEditor({
               {model.data.options.length > 0 && (
                 <div>
                   {model.data.options.map((op, ind) => (
-                    <div key={`op_${op.uuid}`} className="flex items-center mb-1">
+                    <div
+                      key={`op_${op.uuid}`}
+                      className="flex items-center mb-1"
+                    >
                       <span className="w-6 text-sm">{ind + 1}.</span>
                       <input
                         type="text"

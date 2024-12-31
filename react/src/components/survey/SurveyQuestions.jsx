@@ -1,7 +1,7 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import QuestionEditor from "./QuestionEditor";
+import QuestionEditor from "../question/QuestionEditor";
 
 // define 2 props
 export default function ({ questions, onQuestionsUpdate }) {
@@ -17,6 +17,7 @@ export default function ({ questions, onQuestionsUpdate }) {
       question: "",
       description: "",
       data: {},
+      is_require: false,
     });
 
     setMyQuestions([...myQuestions]);
@@ -59,6 +60,8 @@ export default function ({ questions, onQuestionsUpdate }) {
           Add question
         </button>
       </div>
+      
+      {/* Load/Update questionEditors */}
       {myQuestions.length ? (
         myQuestions.map((q, ind) => (
           <QuestionEditor

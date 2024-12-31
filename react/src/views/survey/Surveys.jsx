@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import PageComponent from "../components/PageComponent";
-import { useStateContext } from "../contexts/ContextProvider";
-import SurveyListItem from "../components/SurveyListItem";
-import TButton from "../components/core/TButton";
+import PageComponent from "../../components/PageComponent";
+import { useStateContext } from "../../contexts/ContextProvider";
+import SurveyListItem from "../../components/survey/SurveyListItem";
+import TButton from "../../components/core/TButton";
 import { PlusCircleIcon } from "@heroicons/react/24/solid";
-import axiosClient from "../axios";
-import PaginationLinks from "../components/PaginationLinks";
-import router from "../router";
+import axiosClient from "../../axios";
+import PaginationLinks from "../../components/PaginationLinks";
+import router from "../../router";
 
 export default function Surveys() {
   const { showToast } = useStateContext();

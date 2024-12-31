@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import PageComponent from "../components/PageComponent";
-import CarLists from "../components/product/CarLists";
-import axiosClient from "../axios";
-import PaginationLinks from "../components/PaginationLinks";
+import PageComponent from "../../components/PageComponent";
+import CarLists from "../../components/product/CarLists";
+import axiosClient from "../../axios";
+import PaginationLinks from "../../components/PaginationLinks";
 
 export default function Cars() {
   const [products, setProducts] = useState([]);

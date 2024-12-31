@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -23,11 +24,14 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'user_name',
         'email',
         'phone',
         'google_id',
         'facebook_id',
         'password',
+        'image',
+        'address'
     ];
 
     /**
@@ -55,10 +59,12 @@ class User extends Authenticatable
 
     public function favouriteCars(): BelongsToMany
     {
-        return $this->belongsToMany(Car::class,
-                                    'favourite_cars',
-                                    'user_id',
-                                    'car_id');
+        return $this->belongsToMany(
+            Car::class,
+            'favourite_cars',
+            'user_id',
+            'car_id'
+        );
         //            ->withTimestamps(); // if pivot table have column timestamp
     }
 
@@ -66,5 +72,15 @@ class User extends Authenticatable
     {
         // return query builder
         return $this->hasMany(Car::class);
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Role::class,
+            'user_roles',
+            'user_id',
+            'role_id'
+        );
     }
 }

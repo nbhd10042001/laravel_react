@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PageComponent from "../components/PageComponent";
 import TButton from "../components/core/TButton";
 import axiosClient from "../axios";
-import { CubeIcon } from "@heroicons/react/24/solid";
+import { CubeIcon, EyeIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { useStateContext } from "../contexts/ContextProvider";
+import { Dropdown } from "flowbite-react";
+import DashboardCard from "../components/DashboardCard";
+import router from "../router";
 
 export default function Dashboard() {
   const { showToast } = useStateContext();
@@ -11,44 +14,182 @@ export default function Dashboard() {
   const seedSurveys = () => {
     axiosClient.post("/seedsurveys").then(() => {
       showToast("Seed data surveys success!", "warning");
+    })
+    .catch(error => {
+      showToast(error.response.data.message, "danger");
     });
   };
 
-  const btn1 = () => {
-    showToast("Test 1 success!", "success");
-  }
-
-  const btn2 = () => {
-    showToast("Test 2 warning!", "warning");
-  }
-
-  const btn3 = () => {
-    showToast("Test 3 danger!", "danger");
-  }
-
+  const onClickBtn = (type) => {
+    if (type === 1) {
+      showToast("Test 1 success!", "success");
+    } else if (type === 2) {
+      showToast("Test 2 warning!", "warning");
+    } else if (type === 3) {
+      showToast("Test 3 danger!", "danger");
+    }
+  };
   const buttons = (
-    <TButton color="green" onClick={() => seedSurveys()}>
-      <CubeIcon className="h-6 w-6 mr-2"></CubeIcon>
-      Seed Survey
-    </TButton>
+    <div>
+      <Dropdown dismissOnClick={false} placement="left-start">
+        <Dropdown.Item>
+          <div onClick={() => seedSurveys()} className="flex text-blue-500">
+            <CubeIcon className="h-6 w-6 mr-2"></CubeIcon>
+            Seed Survey
+          </div>
+        </Dropdown.Item>
+        <Dropdown.Divider />
+        <Dropdown.Item>
+          <div onClick={() => onClickBtn(1)} className="flex text-green-500">
+            <CubeIcon className="h-6 w-6 mr-2"></CubeIcon>
+            Test 1
+          </div>
+        </Dropdown.Item>
+        <Dropdown.Item>
+          <div onClick={() => onClickBtn(2)} className="flex text-yellow-500">
+            <CubeIcon className="h-6 w-6 mr-2"></CubeIcon>
+            Test 2
+          </div>
+        </Dropdown.Item>
+        <Dropdown.Item>
+          <div onClick={() => onClickBtn(3)} className="flex text-red-500">
+            <CubeIcon className="h-6 w-6 mr-2"></CubeIcon>
+            Test 3
+          </div>
+        </Dropdown.Item>
+      </Dropdown>
+    </div>
   );
+
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({});
+
+  useEffect(() => {
+    setLoading(true);
+    axiosClient.get(`/dashboard`)
+      .then((res) => {
+        setLoading(false);
+        setData(res.data);
+        return res;
+      })
+      .catch((error) => {
+        setLoading(false);
+        return error;
+      });
+  }, []);
 
   return (
     <PageComponent title="Dashboard" buttons={buttons}>
-      <div className="w-[10rem] flex flex-col gap-1">
-      <TButton color="green" onClick={() => btn1()}>
-        <CubeIcon className="h-6 w-6 mr-2"></CubeIcon>
-        Test 1
-      </TButton>
-      <TButton color="green" onClick={() => btn2()}>
-        <CubeIcon className="h-6 w-6 mr-2"></CubeIcon>
-        Test 2
-      </TButton>
-      <TButton color="green" onClick={() => btn3()}>
-        <CubeIcon className="h-6 w-6 mr-2"></CubeIcon>
-        Test 3
-      </TButton>
-      </div>
+      {loading && <div className="flex justify-center">Loading...</div>}
+      {!loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-gray-700">
+          {/* Totle Surveys */}
+          <DashboardCard
+            title="Total Surveys"
+            className="order-1 lg:order-2"
+            style={{ animationDelay: "0.1s" }}
+          >
+            <div className="text-8xl pb-4 font-semibold flex-1 flex items-center justify-center">
+              {data.totalSurveys}
+            </div>
+          </DashboardCard>
+
+          {/* Totle Answers */}
+          <DashboardCard
+            title="Total Answers"
+            className="order-2 lg:order-4"
+            style={{ animationDelay: "0.2s" }}
+          >
+            <div className="text-8xl pb-4 font-semibold flex-1 flex items-center justify-center">
+              {data.totalAnswers}
+            </div>
+          </DashboardCard>
+
+          {/* Latest Survey */}
+          <DashboardCard
+            title="Latest Survey"
+            className="order-3 lg:order-1 row-span-2"
+            style={{ animationDelay: "0.2s" }}
+          >
+            {data.latestSurvey && (
+              <div>
+                <img
+                  src={data.latestSurvey.image_url}
+                  className="w-[240px] mx-auto"
+                />
+                <h3 className="font-bold text-xl mb-3">
+                  {data.latestSurvey.title}
+                </h3>
+                <div className="flex justify-between text-sm mb-1">
+                  <div>Create Date:</div>
+                  <div>{data.latestSurvey.created_at}</div>
+                </div>
+                <div className="flex justify-between text-sm mb-1">
+                  <div>Expire Date:</div>
+                  <div>{data.latestSurvey.expire_date}</div>
+                </div>
+                <div className="flex justify-between text-sm mb-1">
+                  <div>Status:</div>
+                  <div>{data.latestSurvey.status ? "Active" : "Draft"}</div>
+                </div>
+                <div className="flex justify-between text-sm mb-1">
+                  <div>Questions:</div>
+                  <div>{data.latestSurvey.questions}</div>
+                </div>
+                <div className="flex justify-between text-sm mb-3">
+                  <div>Answers:</div>
+                  <div>{data.latestSurvey.answers}</div>
+                </div>
+                <div className="flex justify-between">
+                  <TButton to={`/surveys/${data.latestSurvey.id}`} link>
+                    <PencilIcon className="w-5 h-5 mr-2" />
+                    Edit Survey
+                  </TButton>
+                  <TButton link>
+                    <EyeIcon className="w-5 h-5 mr-2" />
+                    View Answers
+                  </TButton>
+                </div>
+              </div>
+            )}
+            {!data.latestSurvey && (
+              <div className="text-gray-600 text-center py-16">
+                Your don't have surveys yet
+              </div>
+            )}
+          </DashboardCard>
+
+          {/* Latest Answers */}
+          <DashboardCard
+            title="Latest Answers"
+            className="order-4 lg:order-3 row-span-2"
+            style={{ animationDelay: "0.3s" }}
+          >
+            {data.latestAnswers.length && (
+              <div className="text-left">
+                {data.latestAnswers.map((answer) => (
+                  <a
+                    href="#"
+                    key={answer.id}
+                    className="block p-2 hover:bg-gray-100/90"
+                  >
+                    <div className="font-semibold">{answer.survey.title}</div>
+                    <small>
+                      Answer Made at:
+                      <i className="font-semibold">{answer.end_date}</i>
+                    </small>
+                  </a>
+                ))}
+              </div>
+            )}
+            {!data.latestAnswers.length && (
+              <div className="text-gray-600 text-center py-16">
+                Your don't have answers yet
+              </div>
+            )}
+          </DashboardCard>
+        </div>
+      )}
     </PageComponent>
   );
 }

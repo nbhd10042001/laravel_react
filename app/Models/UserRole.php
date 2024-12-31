@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SurveyQuestionAnswer extends Model
+class UserRole extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['survey_question_id', 'survey_answer_id', 'answer'];
+    public $timestamps = false;
+
+    protected $fillable = ['role_id', 'user_id'];
 }

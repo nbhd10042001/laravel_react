@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosClient from "../axios";
+import axiosClient from "../../axios";
 import { Carousel } from "flowbite-react";
 import {
   CheckCircleIcon,
@@ -7,7 +7,7 @@ import {
   StarIcon,
 } from "@heroicons/react/24/solid";
 import { Radio, RadioGroup } from "@headlessui/react";
-import CarInform from "../components/product/CarInform";
+import CarInform from "../../components/product/CarInform";
 
 export default function CarShow() {
   const [product, setProduct] = useState({});

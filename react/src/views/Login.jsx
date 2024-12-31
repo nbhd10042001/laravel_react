@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import axiosClient from "../axios";
@@ -6,16 +6,15 @@ import axiosClient from "../axios";
 export default function Login() {
   const { setCurrentUser, setUserToken } = useStateContext();
 
-  const [email, setEmail] = useState("");
+  const [userOrEmail, setUserOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState({ __html: "" });
 
   const onSubmit = (ev) => {
     ev.preventDefault();
     setError({ __html: "" });
-    axiosClient
-      .post("/login", {
-        email: email,
+    axiosClient.post("/login", {
+        userOrEmail: userOrEmail,
         password: password,
       })
       .then(({ data }) => {
@@ -64,20 +63,21 @@ export default function Login() {
 
           <div>
             <label
-              htmlFor="email"
+              htmlFor="setUserOrEmail"
               className="block text-sm/6 font-medium text-gray-900"
             >
-              Email address
+              User name Or Email address
             </label>
             <div className="mt-2">
               <input
-                id="email"
-                name="email"
-                type="email"
-                value={email}
-                onChange={(ev) => setEmail(ev.target.value)}
+                id="setUserOrEmail"
+                name="setUserOrEmail"
+                type="text"
+                // type="email"
+                // autoComplete="email"
+                value={userOrEmail}
+                onChange={(ev) => setUserOrEmail(ev.target.value)}
                 required
-                autoComplete="email"
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 
                   shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
                   focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"

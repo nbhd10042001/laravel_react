@@ -4,10 +4,11 @@ import axiosClient from "../axios.js";
 import { useStateContext } from "../contexts/ContextProvider.jsx";
 
 export default function SignUp() {
-  const { setCurrentUser, setUserToken} = useStateContext();
+  const { setCurrentUser, setUserToken } = useStateContext();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [error, setError] = useState({ __html: "" });
@@ -15,26 +16,30 @@ export default function SignUp() {
   const onSubmit = (ev) => {
     ev.preventDefault();
     setError({ __html: "" });
-    axiosClient
-      .post("/signup", {
+    axiosClient.post("/signup", {
         name: fullName,
         email: email,
+        user_name: userName,
         password: password,
         password_confirmation: passwordConfirmation,
       })
       .then(({ data }) => {
-        setCurrentUser(data.user)
-        setUserToken(data.token)
+        setCurrentUser(data.user);
+        setUserToken(data.token);
       })
       .catch((error) => {
-        if (error.response) {
-          const finalErrors = Object.values(error.response.data.errors).reduce(
-            (accum, next) => [...accum, ...next], []
-          );
-          // console.log(finalErrors);
-          setError({ __html: finalErrors.join('<br>') });
+        // if (error.response) {
+        //   const finalErrors = Object.values(error.response.data.errors).reduce(
+        //     (accum, next) => [...accum, ...next],
+        //     []
+        //   );
+        //   // console.log(finalErrors);
+        //   setError({ __html: finalErrors.join("<br>") });
+        // }
+
+        if (error.response.data) {
+          setError({ __html: error.response.data.message });
         }
-        console.error(error);
       });
   };
 
@@ -44,14 +49,6 @@ export default function SignUp() {
         Sign Up
       </h2>
 
-      {/* render error */}
-      {error.__html && (
-        <div
-          className="bg-red-500 rounded py-2 px-3 text-white"
-          dangerouslySetInnerHTML={error}
-        ></div>
-      )}
-
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form
           onSubmit={onSubmit}
@@ -59,6 +56,15 @@ export default function SignUp() {
           method="POST"
           className="space-y-6"
         >
+          {/* Show error */}
+          {error.__html && (
+            <div
+              className="py-2 px-3 text-center text-red-500"
+              dangerouslySetInnerHTML={error}
+            ></div>
+          )}
+
+          {/* form sign up */}
           <div>
             <label
               htmlFor="full-name"
@@ -79,6 +85,30 @@ export default function SignUp() {
                   ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 
                   focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
                 placeholder="Your full name ..."
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="user-name"
+              className="block text-sm/6 font-medium text-gray-900"
+            >
+              User Name
+              {/* fullName */}
+            </label>
+            <div className="mt-2">
+              <input
+                id="user-name"
+                name="user-name"
+                type="text"
+                required
+                value={userName}
+                onChange={(ev) => setUserName(ev.target.value)}
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm 
+                  ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 
+                  focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+                placeholder="Your User name ..."
               />
             </div>
           </div>

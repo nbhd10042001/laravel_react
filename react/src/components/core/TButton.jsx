@@ -11,10 +11,12 @@ export default function TButton({
                             link = false,
                             target = "_blank",
                             onClick = () => {},
-                            children })
+                            children,
+                          })
 {
   let classes = [
     "flex",
+    "items-center",
     "whitespace-nowrap",
     "text-sm",
     "border",

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import PageComponent from "../components/PageComponent";
-import { PhotoIcon } from "@heroicons/react/24/solid";
-import axiosClient from "../axios.js";
-import TButton from "../components/core/TButton.jsx";
+import PageComponent from "../../components/PageComponent.jsx";
+import { LinkIcon, PhotoIcon, TrashIcon } from "@heroicons/react/24/solid";
+import axiosClient from "../../axios.js";
+import TButton from "../../components/core/TButton.jsx";
 import { useNavigate, useParams } from "react-router-dom";
-import SurveyQuestions from "../components/SurveyQuestions.jsx";
-import { useStateContext } from "../contexts/ContextProvider.jsx";
+import SurveyQuestions from "../../components/survey/SurveyQuestions.jsx";
+import { useStateContext } from "../../contexts/ContextProvider.jsx";
+import router from "../../router.jsx";
 
 export default function SurveyView() {
   const navigate = useNavigate();
@@ -73,6 +74,7 @@ export default function SurveyView() {
         }
       })
       .catch((err) => {
+        console.log(err);
         // check response if error, then show error on form
         if (err && err.response.data.errors) {
           if (err.response.data.errors["title"]) {
@@ -86,8 +88,8 @@ export default function SurveyView() {
           }
           // error 422 (custom in SurveyController)
           //when question has not title and add border red
-          if (err.response.data.errors["question_title"]) {
-            setErrorTitleQuestion(err.response.data.errors["question_title"]);
+          if (err.response.data.errors["message"]) {
+            setErrorTitleQuestion(err.response.data.errors["message"]);
             renderRedBorderTitleQuestion(err.response.data.errors["id"]);
           }
         }
@@ -118,12 +120,35 @@ export default function SurveyView() {
       axiosClient.get(`/survey/${id}`).then(({ data }) => {
         setSurvey(data.data);
         setLoading(false);
+      })
+      .catch(error => {
+        router.navigate(`/error/${error.response.status}`);
       });
     }
   }, []);
 
+  const onClickDelete = () => {
+
+  }
+
+  const buttons = (
+    <div className="flex flex-row gap-2">
+      <TButton color="indigo" href={`/survey/public/${survey.slug}`}>
+        <LinkIcon className="h-6 w-6 mr-2"></LinkIcon>
+        Public Link
+      </TButton>
+      <TButton color="red" onClick={onClickDelete}>
+        <TrashIcon className="h-6 w-6 mr-2"></TrashIcon>
+        Delete
+      </TButton>
+    </div>
+  );
+
   return (
-    <PageComponent title={id ? "Update Survey" : "Create new Survey"}>
+    <PageComponent
+      buttons={buttons}
+      title={id ? "Update Survey" : "Create new Survey"}
+    >
       {loading && <div className="text-center text-lg">Loading...</div>}
       {!loading && (
         <form action="#" method="POST" onSubmit={onSubmit}>
@@ -139,7 +164,6 @@ export default function SurveyView() {
                   {survey.image_url && (
                     <img
                       src={survey.image_url}
-                      alt=""
                       className="w-32 h-32 object-cover"
                     />
                   )}
@@ -278,6 +302,7 @@ export default function SurveyView() {
                   <i>{errorQuestions ? errorQuestions : errorTitleQuestion}</i>
                 </small>
               </div>
+              {/* Load/Update questions */}
               <SurveyQuestions
                 questions={survey.questions}
                 onQuestionsUpdate={onQuestionsUpdate}
