@@ -22,7 +22,9 @@ Route::middleware([Cors::class])->group(function () {
         Route::get('/profile/{name?}', [AuthController::class, 'profile']);
         Route::put('/profile/edit/{user:user_name}', [AuthController::class, 'updateProfile']);
         Route::apiResource('survey', SurveyController::class);
-        Route::apiResource('car', CarController::class);
+        Route::apiResource('car', CarController::class)->except([
+            'index', 'show'
+        ]);
         Route::get('/dashboard', [DashboardController::class, 'index']);
     });
 
@@ -32,6 +34,10 @@ Route::middleware([Cors::class])->group(function () {
     Route::get('/survey/get-by-slug/{survey:slug}', [SurveyController::class, 'getBySlug']);
     Route::post('/survey/{survey}/answer', [SurveyController::class, 'storeAnswer']);
 });
+
+Route::get('/cars', [CarController::class, 'index']);
+Route::get('/car/{car}', [CarController::class, 'show']);
+Route::get('/get-new-cars', [CarController::class, 'newCars']);
 
 Route::post('/csrf-token', function () {
     // refresh csrf token

@@ -29,7 +29,7 @@ class UpdateProfileRequest extends FormRequest
     {
         return [
             'name' => 'string|max:1000',
-            'phone' => 'nullable|int|max:12',
+            'phone' => 'nullable|string|min:11|max:15',
             'address' => 'nullable|string|max:1000',
             'image' => 'nullable|string',
         ];

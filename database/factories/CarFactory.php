@@ -42,7 +42,7 @@ class CarFactory extends Factory
             'phone' => function (array $attributes){
                 return User::find($attributes['user_id'])->phone;
             },
-            'description' => fake()->text(400),
+            'description' => fake()->text(400) . "[Fake]",
             'published_at' => fake()->optional(0.9)
                                     ->dateTimeBetween('-1 month', '+1 day')
 

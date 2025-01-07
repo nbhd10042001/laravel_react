@@ -2,16 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\Car;
-use App\Models\CarFeatures;
-use App\Models\CarImage;
 use App\Models\City;
 use App\Models\Maker;
 use App\Models\Model;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\State;
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -21,7 +17,39 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $permissions = [
+            1 => 'dashboard',
+            2 => 'editor',
+            3 => 'view',
+        ];
+        $roles = [
+            'Admin' => [$permissions[1], $permissions[2], $permissions[3]],
+            'Seller' => [$permissions[2], $permissions[3]],
+            'Member' => [$permissions[3]],
+        ];
+
+        foreach ($roles as $role => $pers) {
+            // get old role 
+            $oldRole = Role::where('name', $role)->first();
+            // delete old role and permissions of old role
+            if ($oldRole) {
+                $oldRole->permissions()->delete();
+                $oldRole->delete();
+            }
+
+            // create new role and permissions of new role
+            Role::factory()
+                ->state(['name' => $role])
+                ->has(
+                    Permission::factory()
+                        ->count(count($pers))
+                        ->sequence(...array_map(
+                            fn($per) => ['name' => $per],
+                            $permissions
+                        ))
+                )
+                ->create();
+        }
 
         // Create State
         $states = [
@@ -57,7 +85,7 @@ class DatabaseSeeder extends Seeder
         foreach($makers as $maker => $models) // key - value
         {
             Maker::factory()
-                ->state(['name' => $maker])
+                ->state(['name' => $maker, 'image' => 'images/car/logo_maker/'.$maker.'_logo.png'])
                 ->has(Model::factory()
                         ->count(count($models))
                         ->sequence(...array_map(fn ($model) => ['name' => $model],
@@ -66,29 +94,5 @@ class DatabaseSeeder extends Seeder
                 )
                 ->create();
         }
-
-        /**
-         * Create 3 users first, then create 2 more users 
-         * and for each user (from the last 2 users) create 50 cars,
-         * with image, feature and add these cars to favourite cars of these 2 users
-         */
-
-        User::factory()->count(3)->create();
-
-        User::factory()->count(2)
-            ->has(
-                Car::factory()
-                    ->count(50)
-                    ->has(
-                        CarImage::factory()
-                            ->count(5)
-                            ->sequence(fn(Sequence $sequence) => [
-                                'position' => $sequence->index % 5 + 1])
-                        , 'images'
-                    )
-                    ->has(CarFeatures::factory(), 'features')
-                    , 'favouriteCars'
-                )
-            ->create();
     }
 }

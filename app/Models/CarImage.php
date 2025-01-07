@@ -12,7 +12,7 @@ class CarImage extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'image_path', 'position',
+        'image_path', 'position', 'car_id'
     ];
 
     public function car(): BelongsTo

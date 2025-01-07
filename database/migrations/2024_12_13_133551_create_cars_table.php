@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('cars', function (Blueprint $table) {
             $table->id();
-            $table->integer('year');
+            $table->string('year');
             $table->integer('price');
             $table->string('vin', 255);
             $table->string('car_type', 255);
@@ -22,10 +22,11 @@ return new class extends Migration
             $table->foreignId('model_id')->constrained('models');
             $table->foreignId('city_id')->constrained('cities');
             $table->integer('mileage');
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('address', 255);
             $table->string('phone', 45);
             $table->longText('description')->nullable();
+            $table->boolean('publish')->nullable();
             $table->timestamp('published_at')->nullable();
             $table->timestamps(); // create/update
             $table->timestamp('deleted_at')->nullable();

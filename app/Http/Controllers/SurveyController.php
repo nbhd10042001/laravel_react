@@ -59,7 +59,8 @@ class SurveyController extends Controller
     // method create
     public function store(StoreSurveyRequest $request)
     {
-        Gate::authorize('store', $request->user());
+        // Gate::authorize('store');
+        // authorize in StoreSurveyRequest
         $data = $request->validated();
         $this->checkQuestionHaveTitle($data);
 
@@ -97,13 +98,6 @@ class SurveyController extends Controller
         return new SurveyResource($survey);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Survey $survey)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -307,7 +301,7 @@ class SurveyController extends Controller
             throw new \Exception('did not match data URI with image data');
         }
 
-        $dir = 'images/';
+        $dir = 'images/survey/';
         $file = Str::random() . '.' . $type;
         $absolutePath = public_path($dir); // path dir
         $relativePath = $dir . $file; // path image file

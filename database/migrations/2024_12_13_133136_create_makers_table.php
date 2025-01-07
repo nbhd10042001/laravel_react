@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('makers', function (Blueprint $table) {
             $table->id();
             $table->string('name', 45);
+            $table->string('image', 256)->nullable();
         });
     }
 

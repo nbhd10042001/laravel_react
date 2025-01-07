@@ -16,7 +16,7 @@ export default function UserProfileEdit() {
   });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { showToast, updateCurrentUser } = useStateContext();
+  const { showToast, updateCurrentUser, userToken } = useStateContext();
   const [image, setImage] = useState("");
 
   const onSubmit = (ev) => {
@@ -80,7 +80,14 @@ export default function UserProfileEdit() {
     reader.readAsDataURL(file);
   };
 
+  if(!userToken){
+    navigate("/login");
+  }
+
   useEffect(() => {
+    if(!userToken){
+      navigate("/login");
+    }
     axiosClient
       .get("/me")
       .then(({ data }) => {

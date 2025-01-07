@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import axiosClient from "../axios";
+import { Spinner } from "flowbite-react";
 
 export default function Login() {
   const { setCurrentUser, setUserToken } = useStateContext();
@@ -9,20 +10,27 @@ export default function Login() {
   const [userOrEmail, setUserOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState({ __html: "" });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const onSubmit = (ev) => {
     ev.preventDefault();
+    setLoading(true);
     setError({ __html: "" });
-    axiosClient.post("/login", {
+    axiosClient
+      .post("/login", {
         userOrEmail: userOrEmail,
         password: password,
       })
       .then(({ data }) => {
+        setLoading(false);
         setCurrentUser(data.user);
         setUserToken(data.token);
       })
       .catch((error) => {
-        if (error.response) {
+        setLoading(false);
+        if (error.response.status === 500) {
+          navigate(`/error/${error.response.status}/${error.response.statusText}`);
           // const finalErrors = Object.values(error.response.data.errors).reduce(
           //   (accum, next) => [...accum, ...next],
           //   []
@@ -57,7 +65,7 @@ export default function Login() {
         >
           {/* display error */}
           <div className="text-red-500 text-center">
-            <i dangerouslySetInnerHTML={error}></i>
+            <span dangerouslySetInnerHTML={error}></span>
           </div>
           {/* display error */}
 
@@ -116,7 +124,7 @@ export default function Login() {
                 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 
                 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              Sign in
+              {loading ? <Spinner aria-label="loading"></Spinner> : "Login"}
             </button>
           </div>
         </form>

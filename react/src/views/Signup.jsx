@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axiosClient from "../axios.js";
 import { useStateContext } from "../contexts/ContextProvider.jsx";
+import { Spinner } from "flowbite-react";
 
 export default function SignUp() {
   const { setCurrentUser, setUserToken } = useStateContext();
@@ -11,12 +12,14 @@ export default function SignUp() {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
-  const [error, setError] = useState({ __html: "" });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const onSubmit = (ev) => {
     ev.preventDefault();
-    setError({ __html: "" });
-    axiosClient.post("/signup", {
+    setLoading(true);
+    axiosClient
+      .post("/signup", {
         name: fullName,
         email: email,
         user_name: userName,
@@ -26,22 +29,59 @@ export default function SignUp() {
       .then(({ data }) => {
         setCurrentUser(data.user);
         setUserToken(data.token);
+        setLoading(false);
       })
       .catch((error) => {
-        // if (error.response) {
-        //   const finalErrors = Object.values(error.response.data.errors).reduce(
-        //     (accum, next) => [...accum, ...next],
-        //     []
-        //   );
-        //   // console.log(finalErrors);
-        //   setError({ __html: finalErrors.join("<br>") });
-        // }
-
+        setLoading(false);
+        if (error.response.status === 500) {
+          navigate(`/error/${error.response.status}/${error.response.statusText}`);
+        }
         if (error.response.data) {
-          setError({ __html: error.response.data.message });
+          const errors = error.response.data.errors;
+          if (errors.email) {
+            showError("email", errors.email[0]);
+          }
+          if (errors.user_name) {
+            showError("username", errors.user_name[0]);
+          }
+          if (errors.password) {
+            showError("password", errors.password[0]);
+          }
+          if (errors.name) {
+            showError("fullname", errors.name[0]);
+          }
         }
       });
   };
+
+  const showError = (id, message) => {
+    document.getElementById(`error-${id}`).innerHTML = message;
+    document.getElementById(id).classList.add("border-red-500");
+  };
+
+  const disableError = (id) => {
+    document.getElementById(`error-${id}`).innerHTML = "";
+    document.getElementById(id).classList.remove("border-red-500");
+  };
+
+  const classes = [
+    "block",
+    "w-full",
+    "border-gray-100",
+    "rounded-md",
+    "py-1.5",
+    "text-gray-900",
+    "shadow-sm",
+    "ring-1",
+    "ring-inset",
+    "ring-gray-300",
+    " placeholder:text-gray-400",
+    "focus:ring-2",
+    "focus:ring-inset",
+    "focus:ring-indigo-600",
+    "sm:text-sm/6",
+    " ",
+  ];
 
   return (
     <>
@@ -56,61 +96,55 @@ export default function SignUp() {
           method="POST"
           className="space-y-6"
         >
-          {/* Show error */}
-          {error.__html && (
-            <div
-              className="py-2 px-3 text-center text-red-500"
-              dangerouslySetInnerHTML={error}
-            ></div>
-          )}
-
           {/* form sign up */}
           <div>
             <label
-              htmlFor="full-name"
+              htmlFor="fullname"
               className="block text-sm/6 font-medium text-gray-900"
             >
               Full Name
-              {/* fullName */}
             </label>
             <div className="mt-2">
               <input
-                id="full-name"
-                name="name"
+                id="fullname"
+                name="full-name"
                 type="text"
                 required
                 value={fullName}
-                onChange={(ev) => setFullName(ev.target.value)}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm 
-                  ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 
-                  focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+                onChange={(ev) => {
+                  disableError("fullname");
+                  setFullName(ev.target.value);
+                }}
+                className={classes.join(" ")}
                 placeholder="Your full name ..."
               />
             </div>
+            <small id="error-fullname" className="text-red-500"></small>
           </div>
 
           <div>
             <label
-              htmlFor="user-name"
+              htmlFor="username"
               className="block text-sm/6 font-medium text-gray-900"
             >
               User Name
-              {/* fullName */}
             </label>
             <div className="mt-2">
               <input
-                id="user-name"
+                id="username"
                 name="user-name"
                 type="text"
                 required
                 value={userName}
-                onChange={(ev) => setUserName(ev.target.value)}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm 
-                  ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 
-                  focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+                onChange={(ev) => {
+                  disableError("username");
+                  setUserName(ev.target.value);
+                }}
+                className={classes.join(" ")}
                 placeholder="Your User name ..."
               />
             </div>
+            <small id="error-username" className="text-red-500"></small>
           </div>
 
           <div>
@@ -127,14 +161,16 @@ export default function SignUp() {
                 type="email"
                 required
                 value={email}
-                onChange={(ev) => setEmail(ev.target.value)}
+                onChange={(ev) => {
+                  disableError("email");
+                  setEmail(ev.target.value);
+                }}
                 autoComplete="email"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm 
-                  ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 
-                  focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+                className={classes.join(" ")}
                 placeholder="Your email ..."
               />
             </div>
+            <small id="error-email" className="text-red-500"></small>
           </div>
 
           <div>
@@ -144,7 +180,6 @@ export default function SignUp() {
             >
               Password
             </label>
-
             <div className="mt-2">
               <input
                 id="password"
@@ -152,13 +187,15 @@ export default function SignUp() {
                 type="password"
                 required
                 value={password}
-                onChange={(ev) => setPassword(ev.target.value)}
+                onChange={(ev) => {
+                  disableError("password");
+                  setPassword(ev.target.value);
+                }}
                 autoComplete="current-password"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm
-                  ring-1 ring-inset ring-gray-300 placeholder:text-gray-400
-                  focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+                className={classes.join(" ")}
               />
             </div>
+            <small id="error-password" className="text-red-500"></small>
           </div>
 
           <div>
@@ -168,7 +205,6 @@ export default function SignUp() {
             >
               Password Confirmation
             </label>
-
             <div className="mt-2">
               <input
                 id="password-confirmation"
@@ -177,19 +213,16 @@ export default function SignUp() {
                 required
                 value={passwordConfirmation}
                 onChange={(ev) => setPasswordConfirmation(ev.target.value)}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm 
-                  ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
-                  focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+                className={classes.join(" ")}
               />
             </div>
           </div>
-
           <div>
             <button
               type="submit"
               className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              Sign Up
+              {loading ? <Spinner aria-label="loading"></Spinner> : "Sign Up"}
             </button>
           </div>
         </form>

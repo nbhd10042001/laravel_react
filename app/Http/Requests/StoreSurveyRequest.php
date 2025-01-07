@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class StoreSurveyRequest extends FormRequest
 {
@@ -11,7 +12,12 @@ class StoreSurveyRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $role = $this->user()->roles->first()->name;
+        if($role == 'Admin' || $role == 'Seller'){
+            return true;
+        }
+        
+        return false;
     }
 
     protected function prepareForValidation()

@@ -6,20 +6,16 @@ import TButton from "../../components/core/TButton.jsx";
 import { useNavigate, useParams } from "react-router-dom";
 import SurveyQuestions from "../../components/survey/SurveyQuestions.jsx";
 import { useStateContext } from "../../contexts/ContextProvider.jsx";
-import router from "../../router.jsx";
 
 export default function SurveyView() {
   const navigate = useNavigate();
   const { showToast } = useStateContext();
-
+  const { id } = useParams();
   const [errorQuestions, setErrorQuestions] = useState("");
   const [errorExpireDate, setErrorExpireDate] = useState("");
   const [errorTitle, setErrorTitle] = useState("");
   const [errorTitleQuestion, setErrorTitleQuestion] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const { id } = useParams();
-
   const [survey, setSurvey] = useState({
     title: "",
     slug: "",
@@ -74,23 +70,26 @@ export default function SurveyView() {
         }
       })
       .catch((err) => {
-        console.log(err);
+        if(err.response.data.message){
+          showToast(err.response.data.message, "danger");
+        }
         // check response if error, then show error on form
-        if (err && err.response.data.errors) {
-          if (err.response.data.errors["title"]) {
-            setErrorTitle(err.response.data.errors["title"]);
+        if (err.response.data.errors) {
+          const errors = err.response.data.errors;
+          if (errors["title"]) {
+            setErrorTitle(errors["title"]);
           }
-          if (err.response.data.errors["expire_date"]) {
-            setErrorExpireDate(err.response.data.errors["expire_date"]);
+          if (errors["expire_date"]) {
+            setErrorExpireDate(errors["expire_date"]);
           }
-          if (err.response.data.errors["questions"]) {
-            setErrorQuestions(err.response.data.errors["questions"]);
+          if (errors["questions"]) {
+            setErrorQuestions(errors["questions"]);
           }
           // error 422 (custom in SurveyController)
           //when question has not title and add border red
-          if (err.response.data.errors["message"]) {
-            setErrorTitleQuestion(err.response.data.errors["message"]);
-            renderRedBorderTitleQuestion(err.response.data.errors["id"]);
+          if (errors["message"]) {
+            setErrorTitleQuestion(errors["message"]);
+            renderRedBorderTitleQuestion(errors["id"]);
           }
         }
       });
@@ -122,7 +121,7 @@ export default function SurveyView() {
         setLoading(false);
       })
       .catch(error => {
-        router.navigate(`/error/${error.response.status}`);
+        navigate(`/error/${error.response.status}`);
       });
     }
   }, []);

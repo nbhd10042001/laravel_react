@@ -5,13 +5,14 @@ import router from "../router";
 
 const StateContext = createContext({
   currentUser: {},
+  setCurrentUser: () => {},
   userToken: null,
+  setUserToken: () => {},
+  updateCurrentUser: () => {},
   surveys: [],
   questionTypes: [],
   boxToast: [],
-  setCurrentUser: () => {},
-  setUserToken: () => {},
-  updateCurrentUser: () => {},
+  showDialog: () => {},
 });
 
 export const ContextProvider = ({ children }) => {
@@ -28,8 +29,9 @@ export const ContextProvider = ({ children }) => {
     "checkbox",
     "textarea",
   ]);
-
   const [boxToast, setBoxToast] = useState([]);
+  const [dialog, setDialog] = useState(false);
+
   const toastColors = {
     success: "bg-green-100 text-green-500",
     warning: "bg-yellow-100 text-yellow-500",
@@ -46,13 +48,16 @@ export const ContextProvider = ({ children }) => {
   };
 
   const updateCurrentUser = () => {
-    axiosClient.get('/me')
-    .then(({ data }) => {
-      setCurrentUser(data.user);
-    })
-    .catch(err => {
-      router.navigate(`/error/${err.response.status}`);
-    });
+    if(userToken){
+      axiosClient
+      .get("/me")
+      .then(({ data }) => {
+        setCurrentUser(data.user);
+      })
+      .catch((err) => {
+        router.navigate(`/error/${err.response.status}`);
+      });
+    }
   };
 
   const showToast = (message, type) => {
@@ -60,6 +65,10 @@ export const ContextProvider = ({ children }) => {
     newBox.push({ message: message, type: type, id: uuidv4() });
     setBoxToast(newBox);
   };
+
+  const showDialog = (open) => {
+    setDialog(open);
+  }
 
   // generate token and refresh token when reload window
   const refreshToken = () => {
@@ -93,6 +102,7 @@ export const ContextProvider = ({ children }) => {
         boxToast,
         toastColors,
         showToast,
+        dialog, showDialog
       }}
     >
       {children}
