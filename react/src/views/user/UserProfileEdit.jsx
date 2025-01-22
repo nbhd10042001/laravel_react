@@ -4,7 +4,6 @@ import { useStateContext } from "../../contexts/ContextProvider";
 import PageComponent from "../../components/PageComponent";
 import TButton from "../../components/core/TButton";
 import { Avatar } from "flowbite-react";
-import { useNavigate } from "react-router-dom";
 
 export default function UserProfileEdit() {
   const [profile, setProfile] = useState({
@@ -15,9 +14,8 @@ export default function UserProfileEdit() {
     image_file: null,
   });
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const { showToast, updateCurrentUser, userToken } = useStateContext();
   const [image, setImage] = useState("");
+  const { showToast, updateCurrentUser, userToken, navigateR } = useStateContext();
 
   const onSubmit = (ev) => {
     ev.preventDefault();
@@ -27,7 +25,7 @@ export default function UserProfileEdit() {
     axiosClient
       .put(`/profile/edit/${profile.user_name}`, payload)
       .then(() => {
-        navigate("/profile");
+        navigateR("/profile");
         showToast("Your profile was updated!", "success");
         updateCurrentUser();
       })
@@ -80,13 +78,9 @@ export default function UserProfileEdit() {
     reader.readAsDataURL(file);
   };
 
-  if(!userToken){
-    navigate("/login");
-  }
-
   useEffect(() => {
     if(!userToken){
-      navigate("/login");
+      navigateR("/login");
     }
     axiosClient
       .get("/me")
@@ -100,8 +94,11 @@ export default function UserProfileEdit() {
         setImage(data.user.image);
         setLoading(false);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        navigateR(window.location.pathname, true, {
+          code: error.response.status,
+          mess: error.response.statusText,
+        });
       });
   }, []);
 

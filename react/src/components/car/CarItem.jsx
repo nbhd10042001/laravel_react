@@ -11,7 +11,7 @@ export default function CarItem({ car }) {
 
       <div className="my-4 mx-2 flex-col justify-between">
         <h3 className="text-md text-gray-900 font-medium">
-          <Link to={`/car/show/${car.id}`}>
+          <Link to={`/car/${car.id}/show`}>
             <span aria-hidden="true" className="absolute inset-0" />
             {car.year}
             {" - "}
@@ -22,7 +22,7 @@ export default function CarItem({ car }) {
           {car.price} $
         </p>
         <hr />
-        <div className="flex my-2">
+        <div className="flex flex-wrap gap-2 my-2">
           <p className="mr-1 px-2 text-sm text-gray-500 rounded-lg bg-gray-200">
             {car.car_type}
           </p>

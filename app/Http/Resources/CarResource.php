@@ -15,23 +15,27 @@ class CarResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // // this function if/else handle image have path url on internet, not path image in public folder
-        // if(str_contains($this->description, '[Fake]')){
-        //     $imgPrimary = $this->primaryImage->image_path;
-        // }
-        // // update url each image if data car was not fake
-        // else{
-        //     $imgPrimary = $this->primaryImage->image_path ? URL::to($this->primaryImage->image_path) : null;
-        //     $this->images->each(function ($image){
-        //         $image->image_path = URL::to($image->image_path);
-        //     });
-        // }
+        $noImages = [
+            0 => ['image_path' => null],
+            1 => ['image_path' => null],
+            2 => ['image_path' => null],
+            3 => ['image_path' => null],
+        ];
+        $img_locals = [];
 
-        // add current_url_host in front of image path
-        $this->primaryImage->image_path = URL::to($this->primaryImage->image_path);
-        $this->images->each(function ($image) {
-            $image->image_path = URL::to($image->image_path);
-        });
+        // add current url host in front of image path //---------------
+        if ($this->primaryImage) {
+            $this->primaryImage->image_path = URL::to($this->primaryImage->image_path);
+        }
+        if ($this->images) {
+            foreach($this->images as $key => $image){
+                $img_locals [$key] = $image->image_path;
+            }
+            
+            $this->images->each(function ($image) {
+                $image->image_path = URL::to($image->image_path);
+            });
+        }
 
         return [
             'id' => $this->id,
@@ -42,8 +46,9 @@ class CarResource extends JsonResource
             'vin' => $this->vin,
             'mileage' => $this->mileage,
             'price' => $this->price,
-            'img_url' => $this->primaryImage->image_path,
-            'img_urls' => $this->images,
+            'img_url' => $this->primaryImage->image_path ?? URL::to('/images/none/noimage.png'),
+            'img_urls' => count($this->images) > 0 ? $this->images : $noImages,
+            'img_locals' => count($this->images) > 0 ? $img_locals : null,
             'car_type' => $this->car_type,
             'fuel_type' => $this->fuel_type,
             'model' => $this->model->name,
@@ -54,6 +59,7 @@ class CarResource extends JsonResource
             'published_at' => $this->published_at,
             'description' => $this->description,
             'features' => $this->features,
+            'publish' => $this->publish,
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FilterCarRequest;
 use App\Http\Resources\CarResource;
 use App\Models\Car;
 use App\Http\Requests\StoreCarRequest;
@@ -11,8 +12,11 @@ use App\Models\CarImage;
 use App\Models\City;
 use App\Models\Maker;
 use App\Models\Model;
+use App\Models\State;
+use App\Models\User;
 use Arr;
 use File;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Http\Request;
 use Storage;
 use Str;
@@ -21,6 +25,7 @@ class CarController extends Controller
 {
     private $keysToRemove = [
         'images',
+        'image_locals',
         'features',
         'maker',
         'model',
@@ -28,19 +33,34 @@ class CarController extends Controller
         'state'
     ];
 
+    private $allFeatures = [
+        "abs" => 0,
+        "air_conditioning" => 0,
+        "power_windows" => 0,
+        "power_door_locks" => 0,
+        "cruise_control" => 0,
+        "bluetooth_connectivity" => 0,
+        "remote_start" => 0,
+        "gps_navigation" => 0,
+        "heater_seats" => 0,
+        "climate_control" => 0,
+        "rear_parking_sensors" => 0,
+        "leather_seats" => 0,
+    ];
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $user = $request->user();
-
-        return CarResource::collection(
+        $cars = CarResource::collection(
             Car::
                 with(['primaryImage', 'maker', 'model'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(12)
         );
+
+        return $cars;
     }
 
     /**
@@ -56,11 +76,6 @@ class CarController extends Controller
      */
     public function store(StoreCarRequest $request)
     {
-        // $path = '/images/car/car_image_seed/';
-        // $files = Storage::disk('public')->allFiles($path);
-        
-        // return response(['files' => ($files[mt_rand(0, count($files))])], 400);
-
         $data = $request->validated();
 
         $images = $data['images'];
@@ -73,10 +88,14 @@ class CarController extends Controller
 
         $maker_id = Maker::where("name", $data['maker'])->first()->id;
         $model_id = Model::where("name", $data['model'])->first()->id;
+        $state_id = State::where("name", $data['state'])->first()->id;
         $city_id = City::where("name", $data['city'])->first()->id;
+        // remove unnecessary components
         $dataCar = Arr::except($data, $this->keysToRemove);
+        // add new items
         $dataCar['maker_id'] = $maker_id;
         $dataCar['model_id'] = $model_id;
+        $dataCar['state_id'] = $state_id;
         $dataCar['city_id'] = $city_id;
 
         // create new record car table in database
@@ -89,7 +108,7 @@ class CarController extends Controller
         // images table...
         // check if image was given and save on local file system
         if (isset($images)) {
-            foreach($images as $key => $image){
+            foreach ($images as $key => $image) {
                 $relativePath = $this->saveImage($image); // get path image that was handle
                 CarImage::create([
                     'car_id' => $car->id,
@@ -98,8 +117,8 @@ class CarController extends Controller
                 ]);
             }
         }
-        
-        return response("", 200);
+
+        return response("success", 200);
     }
 
     /**
@@ -123,7 +142,97 @@ class CarController extends Controller
      */
     public function update(UpdateCarRequest $request, Car $car)
     {
-        //
+        if ($request->user_id != $car->user_id) {
+            return response(['error' => "Bad request! Not found user id."], 400);
+        }
+
+        // return response(['data' => $request->validated()], 400);
+
+        $data = $request->validated();
+
+        $images = $data['images'];
+        $image_locals = $data['image_locals'];
+        $features = $data['features'];
+
+        $dataFeatures = $this->allFeatures;
+        foreach ($features as $feature) {
+            $dataFeatures[$feature] = 1;
+        }
+
+        $maker_id = Maker::where("name", $data['maker'])->first()->id;
+        $model_id = Model::where("name", $data['model'])->first()->id;
+        $state_id = State::where("name", $data['state'])->first()->id;
+        $city_id = City::where("name", $data['city'])->first()->id;
+        // remove unnecessary components
+        $dataCar = Arr::except($data, $this->keysToRemove);
+        // add new items
+        $dataCar['maker_id'] = $maker_id;
+        $dataCar['model_id'] = $model_id;
+        $dataCar['state_id'] = $state_id;
+        $dataCar['city_id'] = $city_id;
+
+        // features table...
+        CarFeatures::where('car_id', $car->id)->update($dataFeatures);
+
+        // Update car in the database
+        $car->update($dataCar);
+
+        // // // images handle --------------------------------------------------------
+        if (isset($images)) {
+            // // delete files image in local storage
+            foreach ($car->images as $key => $image) {
+                // if image in db not contains in $image_locals, delete it. Else, keep it
+                if (isset($image_locals)) {
+                    if (!in_array($image->image_path, $image_locals)) {
+                        $absolutePath = public_path($image->image_path);
+                        if (File::exists($absolutePath)) {
+                            File::delete($absolutePath);
+                        }
+                    }
+                }
+            }
+
+            // // delete all record images of car
+            CarImage::where('car_id', $car->id)->delete();
+
+            // kiểm tra url trong image_urls nếu có url nào khớp với các image trong image_locals
+            // thì ta phải loại url đó ra
+            if (isset($image_locals)) {
+                foreach ($images as $key => $url) {
+                    foreach ($image_locals as $key2 => $image_s) {
+                        if (str_contains($url, $image_s)) {
+                            unset($images[$key]);
+                        }
+                    }
+                }
+            }
+
+            // keep images not change in local and add new record in database
+            $count = 0;
+            if (isset($image_locals)) {
+                foreach ($image_locals as $key => $image_s) {
+                    $count = $key;
+                    CarImage::create([
+                        'car_id' => $car->id,
+                        'image_path' => $image_s,
+                        'position' => $key
+                    ]);
+                }
+            }
+
+            // upload new image in local and add new record image in database
+            foreach ($images as $key => $image) {
+                $count += 1;
+                $relativePath = $this->saveImage($image); // get path image that was handle and storage
+                CarImage::create([
+                    'car_id' => $car->id,
+                    'image_path' => $relativePath,
+                    'position' => $count,
+                ]);
+            }
+        }
+
+        return response("success", 200);
     }
 
     /**
@@ -134,15 +243,170 @@ class CarController extends Controller
         //
     }
 
-    // other function
+    // other function -------------------------------//
+    public function filterCars(Request $request)
+    {
+        // return response(['user' => $request->user()], 400);
+
+        $userId = $request->user()->id ?? null;
+
+        $data = $request->query();
+        $maker = $data['maker'] ?? 'all';
+        $model = $data['model'] ?? 'all';
+        $state = $data['state'] ?? 'all';
+        $city = $data['city'] ?? 'all';
+        $car_type = $data['car_type'] ?? [];
+        $fuel_type = $data['fuel_type'] ?? [];
+        $sort = $data['sort'];
+
+        // id filter
+        $maker_id = null;
+        $model_id = null;
+        $state_id = null;
+        $city_id = null;
+
+        if ($maker != 'all') {
+            $maker_id = Maker::where('name', $maker)->first()->id;
+        }
+        if ($model != 'all') {
+            $model_id = Model::where('name', $model)->first()->id;
+        }
+        if ($state != 'all') {
+            $state_id = State::where('name', $state)->first()->id;
+        }
+        if ($city != 'all') {
+            $city_id = City::where('name', $city)->first()->id;
+        }
+
+        $query = Car::query();
+        $query->where(function ($query) use ($userId, $maker_id, $model_id, $state_id, $city_id, $car_type, $fuel_type) {
+            // if has userId, then filter car by id user
+            if ($userId != null) {
+                $query->where('user_id', $userId);
+            }
+
+            // Filter cars by request parameters
+            if ($maker_id != null) {
+                $query->where('maker_id', $maker_id);
+            }
+            if ($model_id != null) {
+                $query->where('model_id', $model_id);
+            }
+            if ($city_id != null) {
+                $query->where('city_id', $city_id);
+            }
+            if ($state_id != null) {
+                $query->where('state_id', $state_id);
+            }
+            if (count($car_type) > 0) {
+                $query->whereIn('car_type', $car_type);
+            }
+            if (count($fuel_type) > 0) {
+                $query->whereIn('fuel_type', $fuel_type);
+            }
+        });
+
+        if ($sort === 'oldest') {
+            $query->orderBy('created_at', "asc");
+        }
+        if ($sort === 'newest') {
+            $query->orderBy('created_at', 'desc');
+        }
+        if ($sort === 'price_up') {
+            $query->orderBy('price', 'asc');
+        }
+        if ($sort === 'price_down') {
+            $query->orderBy('price', 'desc');
+        }
+
+        $cars = $query->with(['primaryImage', 'maker', 'model'])
+            ->paginate(12)
+            ->withQueryString(); // keep query string each url page
+
+        return CarResource::collection($cars);
+    }
+
+    public function userCars(Request $request, string $cate = null)
+    {
+        // return response(['user' => $request->user()], 400);
+
+        $user_id = User::where('user_name', $request->user()->user_name)->first()->id;
+        if (!$user_id) {
+            return response("User not found", 400);
+        }
+
+        if ($cate) {
+            $maker_id = Maker::where('name', $cate)->first()->id;
+            if (!$maker_id) {
+                return response('Not found maker', 400);
+            }
+            return CarResource::collection(
+                Car::where('user_id', $user_id)
+                    ->with(['primaryImage', 'maker', 'model'])
+                    ->where('maker_id', $maker_id)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(12)
+            );
+        }
+
+        return CarResource::collection(
+            Car::where('user_id', $user_id)
+                ->with(['primaryImage', 'maker', 'model'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(12)
+        );
+    }
+
     public function newCars(Request $request)
     {
         return CarResource::collection(
             Car::
                 with(['primaryImage', 'maker', 'model'])
                 ->orderBy('created_at', 'desc')
-                ->take(3)->get()
+                ->take(10)->get()
         );
+    }
+
+    public function seedCars(Request $request)
+    {
+        $user = $request->user();
+        if ($user == null) {
+            return response('Not found user', 400);
+        }
+
+        $path = '/images/car/car_image_seed/';
+        $files = Storage::disk('public')->allFiles($path);
+        Car::factory()
+            ->count(5)
+            ->state(['user_id' => $user->id])
+            ->has(
+                CarImage::factory()
+                    ->count(5)
+                    ->sequence(fn(Sequence $sequence) => [
+                        'image_path' => $files[mt_rand(0, count($files) - 1)],
+                        'position' => $sequence->index % 5 + 1
+                    ])
+                ,
+                'images'
+            )
+            ->has(CarFeatures::factory(), 'features')
+            ->create();
+    }
+
+    public function subCategoryCars(Request $request, string $category)
+    {
+        $maker_id = Maker::where('name', $category)->first()->id;
+        if (!$maker_id) {
+            return response('Not found maker', 400);
+        }
+        $cars = CarResource::collection(
+            Car::
+                with(['primaryImage', 'maker', 'model'])
+                ->where('maker_id', $maker_id)
+                ->orderBy('created_at', 'desc')
+                ->paginate(12)
+        );
+        return $cars;
     }
 
     private function saveImage($image)

@@ -26,10 +26,12 @@ class Car extends EloquentModel
         'fuel_type',
         'user_id',
         'city_id',
+        'state_id',
         'address',
         'phone',
         'description',
         'published_at',
+        'publish',
     ];
 
     // // every column fill except user_id

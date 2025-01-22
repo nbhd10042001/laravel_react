@@ -31,7 +31,7 @@ export default function Dashboard() {
   };
   const buttons = (
     <div>
-      <Dropdown dismissOnClick={false} placement="left-start">
+      <Dropdown dismissOnClick={false} placement="left-start" color="blue">
         <Dropdown.Item>
           <div onClick={() => seedSurveys()} className="flex text-blue-500">
             <CubeIcon className="h-6 w-6 mr-2"></CubeIcon>

@@ -28,7 +28,7 @@ function classNames(...classes) {
 }
 
 export default function AdminLayout() {
-  const { currentUser, userToken, setCurrentUser, setUserToken } =
+  const { currentUser, userToken, setCurrentUser, setUserToken, userRole, checkUserRole, navigateR } =
     useStateContext();
   const { boxToast } = useStateContext();
 
@@ -41,10 +41,6 @@ export default function AdminLayout() {
     { name: "Settings", href: "#", onclick: null },
     { name: "Sign out", href: "#", onclick: (event) => logout(event) },
   ];
-
-  if (!userToken) {
-    return <Navigate to="login"></Navigate>;
-  }
 
   const logout = (event) => {
     event.preventDefault();
@@ -60,6 +56,7 @@ export default function AdminLayout() {
   };
 
   useEffect(() => {
+    checkUserRole();
     document.getElementById("box-toast").innerHTML = ""; // clear all toast
   }, []);
 

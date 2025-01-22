@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axiosClient from "../axios.js";
 import { useStateContext } from "../contexts/ContextProvider.jsx";
 import { Spinner } from "flowbite-react";
@@ -13,7 +13,6 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const onSubmit = (ev) => {
     ev.preventDefault();
@@ -33,9 +32,6 @@ export default function SignUp() {
       })
       .catch((error) => {
         setLoading(false);
-        if (error.response.status === 500) {
-          navigate(`/error/${error.response.status}/${error.response.statusText}`);
-        }
         if (error.response.data) {
           const errors = error.response.data.errors;
           if (errors.email) {
@@ -222,7 +218,7 @@ export default function SignUp() {
               type="submit"
               className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              {loading ? <Spinner aria-label="loading"></Spinner> : "Sign Up"}
+              {loading ? <Spinner color="warning" aria-label="loading"></Spinner> : "Sign Up"}
             </button>
           </div>
         </form>

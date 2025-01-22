@@ -8,6 +8,7 @@ use App\Models\CarImage;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class CarSeeder extends Seeder
@@ -27,26 +28,30 @@ class CarSeeder extends Seeder
         $path = '/images/car/car_image_seed/';
         $files = Storage::disk('public')->allFiles($path);
 
-        User::where('name', 'LIKE', '%[Seed]%')->each(function ($oldUser) {
-            $oldUser->delete();
-        });
+        User::where('name', 'LIKE', '%[Seed]%')->delete();
 
-        User::factory()->count(2)
-            ->state(['name' => fake()->name()."[Seed]"])
+        User::factory()
+            ->state(['name' => fake()->name()."[Seed]", 
+                            'user_name' => 'user_seed', 
+                            'id' => '99999999'])
             ->has(
                 Car::factory()
                     ->count(50)
+                    ->state(['user_id' => '99999999'])
                     ->has(
                         CarImage::factory()
                             ->count(5)
                             ->sequence(fn(Sequence $sequence) => [
-                                'image_path' => $files[mt_rand(0, count($files)-1)],
-                                'position' => $sequence->index % 5 + 1])
-                        , 'images'
+                                'image_path' => $files[mt_rand(0, count($files) - 1)],
+                                'position' => $sequence->index % 5 + 1
+                            ])
+                        ,
+                        'images'
                     )
                     ->has(CarFeatures::factory(), 'features')
-                    , 'favouriteCars'
-                )
+                ,
+                'favouriteCars'
+            )
             ->create();
     }
 }

@@ -19,12 +19,12 @@ export default function CarFeature({ features }) {
             protection to keep your car safe.
           </p>
 
-          <dl className="mt-16 grid gap-x-6 gap-y-10 grid-cols-2 sm:gap-y-16 lg:gap-x-8">
+          <dl className="mt-16 grid gap-x-6 gap-y-2 grid-cols-2 sm:gap-y-4 lg:gap-x-8">
             {Object.entries(features).map(([key, value]) => {
-              if (key === "car_id") return;
+              if (key === "car_id" || key === 'id') return;
               return (
                 <div
-                  key={`${key + value}`}
+                  key={`${key}_${value}`}
                   className="border-t border-gray-200 pt-4"
                 >
                   <dt className="font-medium text-gray-900">{key.replaceAll("_", " ")}</dt>
@@ -44,6 +44,7 @@ export default function CarFeature({ features }) {
           {images.map((image, index) => {
             return (
               <img
+                key={`image_${index}`}
                 alt={`image_feature_${index}`}
                 src={image}
                 className="rounded-lg bg-gray-100"

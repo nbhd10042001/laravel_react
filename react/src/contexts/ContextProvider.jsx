@@ -4,8 +4,11 @@ import axiosClient from "../axios";
 import router from "../router";
 
 const StateContext = createContext({
+  navigateR: () => {},
   currentUser: {},
   setCurrentUser: () => {},
+  userRole: null,
+  checkUserRole: () => {},
   userToken: null,
   setUserToken: () => {},
   updateCurrentUser: () => {},
@@ -13,6 +16,7 @@ const StateContext = createContext({
   questionTypes: [],
   boxToast: [],
   showDialog: () => {},
+  urlRedirect: null,
 });
 
 export const ContextProvider = ({ children }) => {
@@ -30,12 +34,27 @@ export const ContextProvider = ({ children }) => {
     "textarea",
   ]);
   const [boxToast, setBoxToast] = useState([]);
-  const [dialog, setDialog] = useState(false);
-
   const toastColors = {
     success: "bg-green-100 text-green-500",
     warning: "bg-yellow-100 text-yellow-500",
     danger: "bg-red-100 text-red-500",
+  };
+  const [dialog, setDialog] = useState(false);
+  const [urlRedirect, setUrlRedirect] = useState("/");
+  const [userRole, setUserRole] = useState();
+
+  const navigateR = (
+    path = "/",
+    error = false,
+    { code = "", mess = "" } = {}
+  ) => {
+    if (error) {
+      setUrlRedirect(path);
+      router.navigate(`/error/${code}/${mess}`);
+    } else {
+      setUrlRedirect("/");
+      router.navigate(path);
+    }
   };
 
   const setUserToken = (token) => {
@@ -48,16 +67,38 @@ export const ContextProvider = ({ children }) => {
   };
 
   const updateCurrentUser = () => {
-    if(userToken){
+    if (userToken) {
       axiosClient
+        .get("/me")
+        .then(({ data }) => {
+          setCurrentUser(data.user);
+          setUserRole(data.user.role);
+        })
+        .catch((err) => {
+          router.navigate(`/error/${err.response.status}`);
+        });
+    }
+  };
+
+  const checkUserRole = () => {
+    const roles = ["Seller", "Admin"];
+    axiosClient
       .get("/me")
       .then(({ data }) => {
-        setCurrentUser(data.user);
+        const role = data.user.role;
+        if (!roles.includes(role)) {
+          navigateR("/", true, {
+            code: 400,
+            mess: "Unauthorized this page!",
+          });
+        }
       })
-      .catch((err) => {
-        router.navigate(`/error/${err.response.status}`);
+      .catch((error) => {
+        navigateR(window.location.pathname, true, {
+          code: error.response.status,
+          mess: error.response.statusText,
+        });
       });
-    }
   };
 
   const showToast = (message, type) => {
@@ -68,7 +109,7 @@ export const ContextProvider = ({ children }) => {
 
   const showDialog = (open) => {
     setDialog(open);
-  }
+  };
 
   // generate token and refresh token when reload window
   const refreshToken = () => {
@@ -92,9 +133,13 @@ export const ContextProvider = ({ children }) => {
   return (
     <StateContext.Provider
       value={{
+        navigateR,
+        urlRedirect,
         currentUser,
         setCurrentUser,
         updateCurrentUser,
+        userRole,
+        checkUserRole,
         userToken,
         setUserToken,
         surveys,
@@ -102,7 +147,8 @@ export const ContextProvider = ({ children }) => {
         boxToast,
         toastColors,
         showToast,
-        dialog, showDialog
+        dialog,
+        showDialog,
       }}
     >
       {children}

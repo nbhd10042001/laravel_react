@@ -5,12 +5,12 @@ import PaginationLinks from "../../components/PaginationLinks";
 import { useStateContext } from "../../contexts/ContextProvider";
 import CategoryFilter from "../../components/car/CategoryFilter";
 
-export default function Cars() {
+export default function UserCars() {
   const [cars, setCars] = useState([]);
   const [meta, setMeta] = useState({});
   const [links, setLinks] = useState({});
   const [loading, setLoading] = useState(false);
-  const { navigateR } = useStateContext();
+  const { navigateR, userToken } = useStateContext();
 
   const onPageClick = (url) => {
     getCars(url);
@@ -18,8 +18,9 @@ export default function Cars() {
 
   const onSearchCarsClick = (payload) => {
     axiosClient
-      .get(`/cars/filter`, {params: payload})
+      .get(`/user-cars-filter`, {params: payload, withCredentials: true})
       .then(({ data }) => {
+        console.log(data);
         updateData(data);
       })
       .catch((error) => {
@@ -32,36 +33,35 @@ export default function Cars() {
       getCars();
       return;
     }
-    var url = `/cars/${cate}`;
+    var url = `/user-cars/${cate}`;
     setLoading(true);
     axiosClient
       .get(url)
       .then(({ data }) => {
         updateData(data);
       })
-      .catch((error) => {
-        navigateR(window.location.pathname, true, {
-          code: error.response.status,
-          mess: error.response.statusText,
-        });
-      });
+      // .catch((error) => {
+      //   navigateR(window.location.pathname, true, {
+      //     code: error.response.status,
+      //     mess: error.response.statusText,
+      //   });
+      // });
   };
 
   const getCars = (url) => {
-    url = url || "/cars";
+    url = url || "/user-cars";
     setLoading(true);
     axiosClient
       .get(url)
       .then(({ data }) => {
         updateData(data);
       })
-      .catch((error) => {
-        navigateR(window.location.pathname, true, {
-          code: error.response.status,
-          mess: error.response.statusText,
-        });
-      })
-      ;
+      // .catch((error) => {
+      //   navigateR(window.location.pathname, true, {
+      //     code: error.response.status,
+      //     mess: error.response.statusText,
+      //   });
+      // });
   };
 
   const updateData = (data) => {
@@ -73,12 +73,15 @@ export default function Cars() {
   };
 
   useEffect(() => {
+    if (!userToken) {
+      navigateR("/login");
+    }
     getCars();
   }, []);
 
   return (
     <CategoryFilter
-      title={"Cars"}
+      title={"Your Cars"}
       loading={loading}
       categoryClick={onCategoryClick}
       searchCarsClick={onSearchCarsClick}

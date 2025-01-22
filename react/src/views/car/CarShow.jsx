@@ -5,41 +5,40 @@ import { StarIcon } from "@heroicons/react/24/solid";
 import { Radio, RadioGroup } from "@headlessui/react";
 import CarInform from "../../components/car/CarInform";
 import CarFeature from "../../components/car/CarFeature";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useStateContext } from "../../contexts/ContextProvider";
 
 export default function CarShow() {
+  const { navigateR } = useStateContext();
   const [car, setCar] = useState({});
   const { id } = useParams();
-  const navigate = useNavigate();
 
   const colors = [
     { name: "White", class: "bg-white", selectedClass: "ring-gray-400" },
     { name: "Gray", class: "bg-gray-200", selectedClass: "ring-gray-400" },
     { name: "Black", class: "bg-gray-900", selectedClass: "ring-gray-900" },
   ];
+  const reviews = { href: "#", average: 4, totalCount: 117 };
+  const [selectedColor, setSelectedColor] = useState(colors[0]);
 
   useEffect(() => {
     if (id) {
       axiosClient
-        .get(`/car/${id}`)
+        .get(`/car-show/${id}`)
         .then(({ data }) => {
-          console.log(data);
           setCar(data.data);
         })
         .catch((error) => {
           console.log(error);
         });
     } else {
-      navigate("/cars");
+      navigateR("/cars");
     }
   }, []);
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
   }
-
-  const reviews = { href: "#", average: 4, totalCount: 117 };
-  const [selectedColor, setSelectedColor] = useState(colors[0]);
 
   return (
     <>
@@ -85,12 +84,12 @@ export default function CarShow() {
                 <div className="hidden lg:grid lg:grid-rows-2 lg:gap-y-8">
                   <img
                     alt={""}
-                    src={car.img_urls[0].image_path}
+                    src={car.img_urls[0] ? car.img_urls[0].image_path : null}
                     className="aspect-[3/2] size-full rounded-lg object-cover"
                   />
                   <img
                     alt={""}
-                    src={car.img_urls[1].image_path}
+                    src={car.img_urls[1] ? car.img_urls[1].image_path : null}
                     className="aspect-[3/2] size-full rounded-lg object-cover"
                   />
                 </div>

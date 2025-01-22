@@ -89,10 +89,11 @@ const templateCar = {
   image_locals: [],
 };
 
-export default function CarCreate() {
+export default function CarEdit() {
   const [models, setModels] = useState([]);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { id } = useParams();
   const [car, setCar] = useState({ ...templateCar });
   const [selectedFs, setSelectedFs] = useState([]);
   const { showToast, navigateR, userRole, checkUserRole, userToken } =
@@ -193,9 +194,9 @@ export default function CarCreate() {
     delete payload.image_urls;
 
     axiosClient
-      .post("/car", payload)
+      .put(`/car/${id}`, payload)
       .then((res) => {
-        showToast("The car was created!", "success");
+        showToast("The car was updated!", "success");
         navigateR("/cars");
       })
       .catch((error) => {
@@ -209,10 +210,59 @@ export default function CarCreate() {
     } else {
       checkUserRole();
     }
+    setLoading(true);
+    axiosClient
+      .get(`/car/${id}`)
+      .then(({ data }) => {
+        // filter features
+        const features = [];
+        Object.entries(data.data.features).map((cf) => {
+          if (cf[0] === "id" || cf[0] === "car_id") {
+            return;
+          }
+          if (cf[1] === 1) {
+            features.push(cf[0]);
+          }
+        });
+        // checked each input features
+        if (features) {
+          features.map((f) => {
+            var element = document.getElementById(`id_${f}`);
+            if (element) {
+              element.checked = true;
+            }
+          });
+        }
+        // add url image if image_path not null
+        const images = [];
+        data.data.img_urls.map((image) => {
+          if (image.image_path !== null) {
+            images.push(`${image.image_path}`);
+          }
+        });
+        // update car/models/maker/cities/features
+        setSelectedFs(features);
+        setCar({
+          ...data.data,
+          features: features,
+          images: [],
+          image_urls: images ?? [],
+          image_locals: data.data.img_locals ?? [],
+        });
+        setModels(maker_model[data.data.maker]);
+        setCities(state_city[data.data.state]);
+        setLoading(false);
+      })
+      .catch((error) => {
+        navigateR(window.location.pathname, true, {
+          code: error.response.status,
+          mess: error.response.statusText,
+        });
+      });
   }, []);
 
   return (
-    <PageComponent title={"Create new Car"}>
+    <PageComponent title={"Edit Car"}>
       {loading && <div className="text-center text-lg">Loading...</div>}
       {!loading && (
         <form action="#" method="POST" onSubmit={onSubmit}>
@@ -670,7 +720,7 @@ export default function CarCreate() {
                 <div className="border-t border-t-gray-400 sm:absolute sm:bottom-0 w-full">
                   <div className="flex items-end gap-2 pt-2">
                     <Button outline color="blue" type="submit">
-                      Create
+                      Save
                     </Button>
                     <span
                       onClick={(ev) => {

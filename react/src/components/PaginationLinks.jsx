@@ -36,7 +36,7 @@ export default function PaginationLinks({ meta, links, onPageClick }) {
           className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 
           rounded-lg focus:z-20 focus:outline-offset-0"
         >
-          <label htmlFor="">{meta.current_page}</label>
+          <label>{meta.current_page}</label>
         </div>
         <a
           href="#"

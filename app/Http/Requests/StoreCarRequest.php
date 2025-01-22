@@ -34,7 +34,7 @@ class StoreCarRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'images' => 'required|array|min:2',
+            'images' => 'nullable|array',
             'year' => 'required',
             'user_id' => 'exists:users,id',
             'car_type' => 'required|string',
@@ -43,7 +43,7 @@ class StoreCarRequest extends FormRequest
             'mileage' => 'required|int',
             'price' => 'required|int',
             'address' => 'required|string',
-            'phone' => 'required|string|min:11|max:15',
+            'phone' => 'required|string|min:9|max:15',
             'maker' => 'required|string',
             'model' => 'required|string',
             'state' => 'required|string',

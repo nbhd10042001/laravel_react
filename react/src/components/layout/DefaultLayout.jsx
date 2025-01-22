@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import {
   Dialog,
@@ -28,20 +26,29 @@ import {
   PhoneIcon,
   PlayCircleIcon,
 } from "@heroicons/react/20/solid";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, redirect } from "react-router-dom";
 import { ToastCustom } from "../ToastCustom";
 import { useStateContext } from "../../contexts/ContextProvider";
 import axiosClient from "../../axios";
-import { Avatar, Dropdown } from "flowbite-react";
+import {
+  Avatar,
+  Button,
+  Drawer,
+  Dropdown,
+  Sidebar,
+  SidebarCollapse,
+  SidebarItem,
+  TextInput,
+} from "flowbite-react";
 import { FooterComponent } from "../FooterComponent";
 
 const navigates = [
   {
-    nameNav: "Product",
+    nameNav: "Car",
     itemNav: [
       {
         name: "Cars",
-        description: "Get a favourite car",
+        description: "View all cars",
         to: "/cars",
         icon: ArchiveBoxIcon,
       },
@@ -54,18 +61,19 @@ const navigates = [
     ],
   },
   {
-    nameNav: "More",
+    roles: ["Seller", "Admin"],
+    nameNav: "Manage",
     itemNav: [
       {
-        name: "more 1",
-        description: "more more more more",
-        to: "/home",
+        name: "Your Cars",
+        description: "View all your cars",
+        to: `/your-cars`,
         icon: ArchiveBoxIcon,
       },
       {
-        name: "more 2",
-        description: "more more more more",
-        to: "/home",
+        name: "Create Car",
+        description: "Create new car",
+        to: "/car/create",
         icon: ArchiveBoxIcon,
       },
     ],
@@ -88,18 +96,36 @@ const callsToAction = [
 ];
 
 export default function DefaultLayout() {
-  const { currentUser, userToken, setCurrentUser, setUserToken, updateCurrentUser } =
-    useStateContext();
+  const {
+    currentUser,
+    userToken,
+    setCurrentUser,
+    setUserToken,
+    userRole,
+    updateCurrentUser,
+    boxToast,
+    navigateR,
+  } = useStateContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { boxToast } = useStateContext();
-  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+  const handleClose = () => setIsOpen(false);
 
+  // navigates -----------------------------//
   const userNavigation = [
     {
       name: "Your Profile",
       href: "",
       handleClickEvent: (event) => {
         document.getElementById("link_profile").click();
+      },
+      icon: IdentificationIcon,
+    },
+    {
+      roles: ["Seller", "Admin"],
+      name: "Admin Board",
+      href: "",
+      handleClickEvent: (event) => {
+        document.getElementById("link_adminboard").click();
       },
       icon: IdentificationIcon,
     },
@@ -124,10 +150,13 @@ export default function DefaultLayout() {
       .then((res) => {
         setCurrentUser({});
         setUserToken(null);
-        navigate("/");
+        window.location.href = '/';
       })
       .catch((error) => {
-        navigate(`/error/${error.response.status}`);
+        navigateR(window.location.pathname, true, {
+          code: error.response.status,
+          mess: error.response.statusText,
+        });
       });
   };
 
@@ -139,7 +168,7 @@ export default function DefaultLayout() {
   return (
     <div className="overflow-hidden relative">
       {/* header */}
-      <header className="bg-white shadow-md fixed w-full h-[5rem] z-20">
+      <header className="bg-dark-custom shadow-md fixed w-full h-[5rem] z-20">
         <nav
           aria-label="Global"
           className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8"
@@ -156,40 +185,34 @@ export default function DefaultLayout() {
             </a>
           </div>
 
-          {/* Button menu for mobile */}
-          <div className="flex lg:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-            >
-              <span className="sr-only">Open main menu</span>
-              <Bars3Icon aria-hidden="true" className="size-6" />
-            </button>
-          </div>
-
           {/* Desktop render navigate */}
           <PopoverGroup className="hidden lg:flex lg:gap-x-12">
             {navigates.map((navigate, index) => {
+              if (navigate.roles && !navigate.roles.includes(userRole)) {
+                return;
+              }
               return (
                 <Popover className="relative" key={`navigate_${index}`}>
-                  {/* name nav */}
-                  <PopoverButton className="focus:outline-none flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900">
-                    {navigate.itemNav && (
-                      <>
-                        {navigate.nameNav}
-                        <ChevronDownIcon
-                          aria-hidden="true"
-                          className="size-5 flex-none text-gray-400"
-                        />
-                      </>
-                    )}
-                    {!navigate.itemNav && (
-                      <Link to={navigate.to}>{navigate.nameNav}</Link>
-                    )}
+                  {/* title nav */}
+                  <PopoverButton className="focus:outline-none flex items-center gap-x-1 text-sm/6 font-semibold text-white hover:text-gray-300">
+                    <div className="group flex items-center">
+                      {navigate.itemNav && (
+                        <>
+                          {navigate.nameNav}
+                          <ChevronDownIcon
+                            aria-hidden="true"
+                            className="size-5 flex-none text-gray-400"
+                          />
+                        </>
+                      )}
+                      {!navigate.itemNav && (
+                        <Link to={navigate.to}>{navigate.nameNav}</Link>
+                      )}
+                      <div className="absolute w-full h-1 bg-white top-10 hidden group-hover:block"></div>
+                    </div>
                   </PopoverButton>
 
-                  {/* panel items nav */}
+                  {/* items nav */}
                   <PopoverPanel
                     transition
                     className="absolute -left-8 top-full z-20 mt-3 w-screen max-w-md overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5 transition data-[closed]:translate-y-1 data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-150 data-[enter]:ease-out data-[leave]:ease-in"
@@ -208,13 +231,14 @@ export default function DefaultLayout() {
                               />
                             </div>
                             <div className="flex-auto">
-                              <Link
+                              <PopoverButton
+                                as={Link}
                                 to={item.to}
                                 className="block font-semibold text-gray-900"
                               >
                                 {item.name}
                                 <span className="absolute inset-0" />
-                              </Link>
+                              </PopoverButton>
                               <p className="mt-1 text-gray-600">
                                 {item.description}
                               </p>
@@ -246,43 +270,26 @@ export default function DefaultLayout() {
             })}
           </PopoverGroup>
 
+          {/* Button menu for mobile */}
+          <div className="flex lg:hidden">
+            <button
+              type="button"
+              // onClick={() => setMobileMenuOpen(true)}
+              onClick={() => setIsOpen(true)}
+              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+            >
+              <span className="sr-only">Open main menu</span>
+              <Bars3Icon color="white" aria-hidden="true" className="size-6" />
+            </button>
+          </div>
+
           {/* Login/logout desktop */}
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end text-white">
             {userToken && (
-              <Dropdown
-                inline
-                renderTrigger={() => (
-                  <span style={{ cursor: "pointer" }}>
-                    <Avatar img={currentUser.image} rounded></Avatar>
-                  </span>
-                )}
-              >
-                <Dropdown.Header className="max-w-[12rem] text-right">
-                  <p className="block truncate text-sm">{currentUser.name}</p>
-                  <span className="block truncate text-sm font-medium">
-                    {currentUser.email}
-                  </span>
-                </Dropdown.Header>
-                {userNavigation.map((item, index) => {
-                  return (
-                    <div key={`userNav_${index}`}>
-                      {item.name === "Logout" && <Dropdown.Divider />}
-                      <span onClick={(ev) => item.handleClickEvent(ev)}>
-                        <Dropdown.Item
-                          className={
-                            `w-full flex flex-row justify-end text-right ` +
-                            (item.name === "Logout"
-                              ? "text-red-500 hover:text-red-800"
-                              : "text-gray-600 hover:text-indigo-600")
-                          }
-                        >
-                          {item.name} <item.icon className="size-5 ml-2" />
-                        </Dropdown.Item>
-                      </span>
-                    </div>
-                  );
-                })}
-              </Dropdown>
+              <button type="button" onClick={() => setIsOpen(true)}>
+                <span className="sr-only">Open main menu</span>
+                <Avatar img={currentUser.image} rounded></Avatar>
+              </button>
             )}
             {!userToken && (
               <div>
@@ -295,7 +302,142 @@ export default function DefaultLayout() {
           </div>
         </nav>
 
-        {/* Mobile render navigate */}
+        {/* Drawer panel navigate */}
+        <Drawer open={isOpen} onClose={handleClose} position="right">
+          <Drawer.Header title="MENU" titleIcon={() => <></>} />
+          <Drawer.Items>
+            <Sidebar
+              aria-label="Sidebar with multi-level dropdown example"
+              className="[&>div]:bg-transparent [&>div]:p-0"
+            >
+              <div className="flex h-full flex-col justify-between py-2">
+                <div>
+                  <Sidebar.Items>
+                    {/* navigation */}
+                    <Sidebar.ItemGroup>
+                      {navigates.map((navigate, index) => {
+                        if (
+                          navigate.roles &&
+                          !navigate.roles.includes(userRole)
+                        ) {
+                          return;
+                        }
+
+                        return (
+                          <div key={`nav-menu-${index}`}>
+                            {/* if nav have child */}
+                            {navigate.itemNav && (
+                              <SidebarCollapse
+                                open={isOpen ? false : true}
+                                label={navigate.nameNav}
+                              >
+                                {navigate.itemNav.map((item, index) => {
+                                  return (
+                                    <div key={`item-menu-${index}`}>
+                                      <Sidebar.Item
+                                        className={`cursor-pointer`}
+                                        onClick={() => {
+                                          setIsOpen(false);
+                                          navigateR(item.to);
+                                        }}
+                                      >
+                                        {item.name}
+                                      </Sidebar.Item>
+                                    </div>
+                                  );
+                                })}
+                              </SidebarCollapse>
+                            )}
+                            {/* if nav not have child */}
+                            {!navigate.itemNav && (
+                              <Sidebar.Item
+                                className={`cursor-pointer`}
+                                onClick={() => {
+                                  setIsOpen(false);
+                                  navigateR(navigate.to);
+                                }}
+                              >
+                                {navigate.nameNav}
+                              </Sidebar.Item>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </Sidebar.ItemGroup>
+
+                    {/* user information - login/logout */}
+                    <Sidebar.ItemGroup>
+                      {/* if user login */}
+                      {userToken && (
+                        <SidebarCollapse
+                          open={isOpen ? false : true}
+                          label={
+                            <div className="flex">
+                              <Avatar img={currentUser.image} rounded></Avatar>
+                              <div className="text-left ml-2 max-w-[10rem] ">
+                                <span className="block truncate text-sm font-medium">
+                                  {currentUser.name}
+                                </span>
+                                <span className="block truncate text-sm font-small">
+                                  {currentUser.email}
+                                </span>
+                              </div>
+                            </div>
+                          }
+                        >
+                          {userNavigation.map((userNav, index) => {
+                            if (
+                              userNav.roles &&
+                              !userNav.roles.includes(userRole)
+                            ) {
+                              return;
+                            }
+                            return (
+                              <div key={`userNav-menu-${index}`}>
+                                <Sidebar.Item
+                                  className={`cursor-pointer`}
+                                  onClick={(event) => {
+                                    setIsOpen(false);
+                                    userNav.handleClickEvent(event);
+                                  }}
+                                >
+                                  {userNav.name}
+                                </Sidebar.Item>
+                              </div>
+                            );
+                          })}
+                        </SidebarCollapse>
+                      )}
+                      {/* If user not login */}
+                      {!userToken && (
+                        <div>
+                          <Sidebar.Item
+                            className={`cursor-pointer`}
+                            onClick={() => {
+                              navigateR("/login");
+                            }}
+                          >
+                            Login
+                          </Sidebar.Item>
+                          <Sidebar.Item
+                            className={`cursor-pointer`}
+                            onClick={() => {
+                              navigateR("/signup");
+                            }}
+                          >
+                            Signup
+                          </Sidebar.Item>
+                        </div>
+                      )}
+                    </Sidebar.ItemGroup>
+                  </Sidebar.Items>
+                </div>
+              </div>
+            </Sidebar>
+          </Drawer.Items>
+        </Drawer>
+
+        {/* Mobile render navigate (not using this) */}
         <Dialog
           open={mobileMenuOpen}
           onClose={setMobileMenuOpen}
@@ -455,8 +597,9 @@ export default function DefaultLayout() {
         </Dialog>
       </header>
 
-      {/* Link */}
+      {/* Element Link */}
       <a id="link_profile" href="/profile" className="hidden"></a>
+      <a id="link_adminboard" href="/dashboard" className="hidden"></a>
 
       {/* Body */}
       <div className=" mt-[5rem]">

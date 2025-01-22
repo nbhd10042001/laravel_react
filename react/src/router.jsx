@@ -10,12 +10,14 @@ import SurveyView from "./views/survey/SurveyView";
 import Cars from "./views/car/Cars";
 import CarShow from "./views/car/CarShow";
 import SurveyPublicView from "./views/survey/SurveyPublicView";
-import SeedAdmin from "./views/user/SeedAdmin";
 import ErrorPage from "./views/ErrorPage";
 import UserProfile from "./views/user/UserProfile";
 import UserProfileEdit from "./views/user/UserProfileEdit";
 import Home from "./views/Home";
 import CarCreate from "./views/car/CarCreate";
+import UserCars from "./views/car/UserCars";
+import SeedPage from "./views/user/SeedPage";
+import CarEdit from "./views/car/CarEdit";
 
 const router = createBrowserRouter([
   // main layout and route
@@ -48,12 +50,20 @@ const router = createBrowserRouter([
         element: <Cars />,
       },
       {
-        path: "/car/show/:id",
+        path: "/car/create",
+        element: <CarCreate />,
+      },
+      {
+        path: "/car/:id/show",
         element: <CarShow />,
       },
       {
-        path: "/car/create",
-        element: <CarCreate />,
+        path: "/car/:id/edit",
+        element: <CarEdit />,
+      },
+      {
+        path: "/your-cars",
+        element: <UserCars />,
       },
     ],
   },
@@ -105,8 +115,8 @@ const router = createBrowserRouter([
     element: <ErrorPage />,
   },
   {
-    path: "/adminseed",
-    element: <SeedAdmin />,
+    path: "/seed/:text",
+    element: <SeedPage />,
   },
 ]);
 

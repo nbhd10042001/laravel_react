@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreignId('maker_id')->constrained('makers');
             $table->foreignId('model_id')->constrained('models');
             $table->foreignId('city_id')->constrained('cities');
+            $table->foreignId('state_id')->constrained('states');
             $table->integer('mileage');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('address', 255);

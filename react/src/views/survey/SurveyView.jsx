@@ -3,13 +3,12 @@ import PageComponent from "../../components/PageComponent.jsx";
 import { LinkIcon, PhotoIcon, TrashIcon } from "@heroicons/react/24/solid";
 import axiosClient from "../../axios.js";
 import TButton from "../../components/core/TButton.jsx";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import SurveyQuestions from "../../components/survey/SurveyQuestions.jsx";
 import { useStateContext } from "../../contexts/ContextProvider.jsx";
 
 export default function SurveyView() {
-  const navigate = useNavigate();
-  const { showToast } = useStateContext();
+  const { showToast, navigateR } = useStateContext();
   const { id } = useParams();
   const [errorQuestions, setErrorQuestions] = useState("");
   const [errorExpireDate, setErrorExpireDate] = useState("");
@@ -62,7 +61,7 @@ export default function SurveyView() {
 
     response
       .then((res) => {
-        navigate("/surveys");
+        navigateR("/surveys");
         if (id) {
           showToast("The survey was updated!", "success");
         } else {
@@ -121,7 +120,10 @@ export default function SurveyView() {
         setLoading(false);
       })
       .catch(error => {
-        navigate(`/error/${error.response.status}`);
+        navigateR(window.location.pathname, true, {
+          code: error.response.status,
+          mess: error.response.statusText,
+        });
       });
     }
   }, []);
@@ -160,13 +162,13 @@ export default function SurveyView() {
                 </label>
 
                 <div className="mt-1 flex items-center">
-                  {survey.image_url && (
+                  {survey.img_url && (
                     <img
-                      src={survey.image_url}
+                      src={survey.img_url}
                       className="w-32 h-32 object-cover"
                     />
                   )}
-                  {!survey.image_url && (
+                  {!survey.img_url && (
                     <span
                       className="flex justify-center items-center text-gray-400 h-12 w-12
                                 overflow-hidden rounded-full bg-gray-100"

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import axiosClient from "../axios";
 import { Spinner } from "flowbite-react";
@@ -11,7 +11,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState({ __html: "" });
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const onSubmit = (ev) => {
     ev.preventDefault();
@@ -29,14 +28,6 @@ export default function Login() {
       })
       .catch((error) => {
         setLoading(false);
-        if (error.response.status === 500) {
-          navigate(`/error/${error.response.status}/${error.response.statusText}`);
-          // const finalErrors = Object.values(error.response.data.errors).reduce(
-          //   (accum, next) => [...accum, ...next],
-          //   []
-          // );
-          // setError({ __html: finalErrors.join("<br>") });
-        }
         setError({ __html: error.response.data.error });
       });
   };
@@ -100,7 +91,6 @@ export default function Login() {
             >
               Password
             </label>
-
             <div className="mt-2">
               <input
                 id="password"
@@ -124,7 +114,7 @@ export default function Login() {
                 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 
                 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              {loading ? <Spinner aria-label="loading"></Spinner> : "Login"}
+              {loading ? <Spinner color="warning" aria-label="loading"></Spinner> : "Login"}
             </button>
           </div>
         </form>

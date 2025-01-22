@@ -1,25 +1,20 @@
 import PageComponent from "../../components/PageComponent";
 import { useEffect, useState } from "react";
 import axiosClient from "../../axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import TButton from "../../components/core/TButton";
 import { PencilIcon } from "@heroicons/react/24/outline";
 import { useStateContext } from "../../contexts/ContextProvider";
 import { Avatar } from "flowbite-react";
 
 export default function UserProfile() {
-  const { userToken } = useStateContext();
+  const { userToken, navigateR } = useStateContext();
   const [user, setUser] = useState();
   const { name } = useParams();
-  const navigate = useNavigate();
-
-  if (!userToken) {
-    navigate("/login");
-  }
 
   useEffect(() => {
     if (!userToken) {
-      navigate("/login");
+      navigateR("/login");
     }
     
     var url = "/profile";
@@ -31,8 +26,11 @@ export default function UserProfile() {
       .then(({ data }) => {
         setUser(data.user);
       })
-      .catch((err) => {
-        navigate(`/error/${err.response.status}`);
+      .catch((error) => {
+        navigateR(window.location.pathname, true, {
+          code: error.response.status,
+          mess: error.response.statusText,
+        });
       });
   }, []);
 

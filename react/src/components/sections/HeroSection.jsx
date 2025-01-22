@@ -36,7 +36,7 @@ export default function HeroSection() {
 
           <div className="text-center">
             <h1 className="text-balance text-5xl font-semibold tracking-tight text-gray-100 sm:text-7xl">
-              Sell your car your way
+              Modern and innovative
             </h1>
             <p className="mt-8 text-pretty text-lg font-medium text-gray-300 sm:text-xl/8">
               Quickly and securely cash-in your offer from a local dealer, or

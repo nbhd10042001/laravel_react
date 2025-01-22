@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useStateContext } from '../contexts/ContextProvider'
+import { Spinner } from "flowbite-react";
 
 export default function ErrorPage() {
   const [message, setMessage] = useState("");
+  const { urlRedirect, navigateR } = useStateContext();
   const { code, text } = useParams();
 
   useEffect(() => {
@@ -12,18 +15,15 @@ export default function ErrorPage() {
     else {
       setMessage(text ?? "Bad request");
     }
+    setTimeout(reloadPage, 3000);
   }, [])
+
+  const reloadPage = () => {
+    navigateR(urlRedirect);
+  }
 
   return (
     <>
-      {/*
-          This example requires updating your template:
-  
-          ```
-          <html class="h-full">
-          <body class="h-full">
-          ```
-        */}
       <main className="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
         <div className="text-center">
           <p className="text-base font-semibold text-indigo-600">{code}</p>
@@ -33,6 +33,7 @@ export default function ErrorPage() {
           <p className="mt-6 text-pretty text-lg font-medium text-gray-500 sm:text-xl/8">
             {message}.
           </p>
+          <Spinner color="warning" aria-label="loading"></Spinner>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <a
               href={"/"}

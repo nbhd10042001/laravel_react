@@ -27,6 +27,12 @@ axiosClient.interceptors.response.use((response) => {
         // router.navigate('/login')
         return error;
     }
+
+    // when server error, redirect page error
+    // if(error.response && error.response.status === 500){
+    //     window.location.replace(`/error/${error.response.status}/${error.response.statusText}`);
+    //     return error;
+    // }
     throw error;
 });
 
