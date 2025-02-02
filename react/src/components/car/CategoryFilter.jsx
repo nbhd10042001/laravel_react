@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { act, useEffect, useRef, useState } from "react";
 import {
   Disclosure,
   DisclosureButton,
@@ -16,7 +16,20 @@ import {
   PlusIcon,
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
-import { Button, Drawer, Dropdown, Sidebar, TextInput } from "flowbite-react";
+import {
+  Button,
+  Checkbox,
+  Drawer,
+  Dropdown,
+  Label,
+  ListGroup,
+  Select,
+  Sidebar,
+  Spinner,
+  TextInput,
+} from "flowbite-react";
+import axiosClient from "../../axios";
+import { useStateContext } from "../../contexts/ContextProvider";
 
 const sortOptions = [
   { name: "Newest", id: "newest", icon: ArrowUpCircleIcon },
@@ -111,7 +124,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-const search = {
+const temp_filters = {
   maker: "all",
   model: "all",
   state: "all",
@@ -125,21 +138,28 @@ export default function CategoryFilter({
   title,
   children,
   loading,
-  categoryClick,
-  searchCarsClick,
+  filterCarsHandle,
+  searchCarHandle,
+  userId,
 }) {
+  const { navigateR } = useStateContext();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [hiddenBoxSearch, setHiddenBoxSearch] = useState(true);
+  const [loadingSearch, setLoadingSearch] = useState(true);
+  const [carDebounce, setCarDebounce] = useState([]);
+  const timer = useRef(null);
   const handleClose = () => setMobileFiltersOpen(false);
-  const [activeCate, setActiveCate] = useState(Categories[0].name);
   const [activeSort, setActiveSort] = useState(sortOptions[0].id);
   const [nameSort, setNameSort] = useState(sortOptions[0].name);
   const [models, setModels] = useState([]);
   const [cities, setCities] = useState([]);
-  const [dataSearch, setDataSearch] = useState({ ...search });
+  const [data, setData] = useState({ ...temp_filters });
+  const [stringSearch, setStringSearch] = useState("");
   const [dataFilter, setDataFilter] = useState({
     car_type: [],
     fuel_type: [],
   });
+  const [resultFor, setResultFor] = useState("");
 
   function onCheckboxFilter(event, filter, value) {
     const newDataFilter = { ...dataFilter };
@@ -151,38 +171,89 @@ export default function CategoryFilter({
     setDataFilter({ ...newDataFilter });
   }
 
-  function onClickCategory(ev, cate) {
-    ev.preventDefault();
-    setActiveCate(cate);
-    if (cate === null) {
-      return;
-    }
-    categoryClick(cate);
-  }
-
   const onClickSort = (sort) => {
     setActiveSort(sort);
-    setActiveCate(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
     const payload = {
-      ...dataSearch,
+      ...data,
       car_type: dataFilter["car_type"],
       fuel_type: dataFilter["fuel_type"],
       sort: sort,
     };
-    searchCarsClick(payload);
+    filterCarsHandle(payload);
   };
 
-  const onClickSearch = () => {
-    setActiveCate(null);
+  const onShowResultFilter = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     const payload = {
-      ...dataSearch,
+      ...data,
       car_type: dataFilter["car_type"],
       fuel_type: dataFilter["fuel_type"],
+      sort: activeSort,
     };
-    searchCarsClick(payload);
+    filterCarsHandle(payload);
+    setResultFor(
+      Object.entries(payload).map((item) => {
+        // console.log(item)
+        if (item[0] === "sort") {
+          return;
+        }
+        if (item[0] === "car_type") {
+          if (item[1].length > 0) {
+            return item[1].join("/") + " - ";
+          }
+          return;
+        }
+        if (item[0] === "fuel_type") {
+          if (item[1].length > 0) {
+            return item[1].join("/") + " - ";
+          }
+          return;
+        }
+        if (item[1] !== "all") {
+          return item[1] + " - ";
+        }
+      })
+    );
   };
+
+  // debounce search car
+  const apiDebounce = (string) => {
+    setLoadingSearch(true);
+    const payload = {
+      string: string,
+      user_id: userId,
+    };
+    axiosClient
+      .get(`/search-cars`, { params: payload, withCredentials: true })
+      .then(({ data }) => {
+        setLoadingSearch(false);
+        setCarDebounce(data.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const handleDebounceSearchCar = (string) => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => apiDebounce(string), 300);
+  };
+
+  const buttonSearchClick = () => {
+    searchCarHandle(stringSearch);
+    setResultFor(stringSearch !== "" ? stringSearch : "all");
+  };
+
+  useEffect(() => {
+    const inputElem = document.getElementById(`input-search-car`);
+    const listElem = document.getElementById(`list-group-search-car`);
+    document.addEventListener("click", (e) => {
+      if (e.target !== inputElem && e.target !== listElem) {
+        setHiddenBoxSearch(true);
+      }
+    });
+  }, []);
 
   return (
     <div className="bg-white -mt-[5rem]">
@@ -200,39 +271,208 @@ export default function CategoryFilter({
               className="[&>div]:bg-transparent [&>div]:p-0"
             >
               <div className="flex h-full flex-col justify-between py-2">
-                <div>
-                  <form className="pb-3 md:hidden">
-                    <TextInput
-                      icon={EyeIcon}
-                      type="search"
-                      placeholder="Search"
-                      required
-                      size={32}
-                    />
-                  </form>
-                  <Sidebar.Items>
-                    {/* Filters */}
-                    {filters.map((filter, index) => {
-                      return (
-                        <Sidebar.ItemGroup key={`filter_${index}`}>
-                          <Sidebar.Collapse
-                            open={mobileFiltersOpen ? false : true}
-                            icon={null}
-                            label={filter.name}
+                <Sidebar.Items>
+                  {/* Select filter */}
+                  <Sidebar.ItemGroup>
+                    <Sidebar.Item>
+                      <div className="flex gap-2">
+                        {/* Maker */}
+                        <div className="w-28">
+                          <div className="mb-2 block">
+                            <Label
+                              htmlFor="maker-mobile"
+                              value="Select maker"
+                            />
+                          </div>
+                          <Select
+                            id="maker-mobile"
+                            value={data["maker"]}
+                            required
+                            onChange={(ev) => {
+                              const value = ev.target.value;
+                              setModels(maker_model[value]);
+                              setData({
+                                ...data,
+                                maker: value,
+                                model: "all",
+                              });
+                            }}
                           >
-                            {filter.options.map((op, ind) => {
-                              return (
-                                <Sidebar.Item key={`op_${ind}`} href={null}>
-                                  {op.label}
-                                </Sidebar.Item>
-                              );
-                            })}
-                          </Sidebar.Collapse>
-                        </Sidebar.ItemGroup>
-                      );
-                    })}
-                  </Sidebar.Items>
-                </div>
+                            <option value="all">All</option>
+                            {Object.entries(maker_model).map(
+                              ([maker, models]) => {
+                                return (
+                                  <option
+                                    key={`maker-mobile-${maker}`}
+                                    value={maker}
+                                  >
+                                    {maker}
+                                  </option>
+                                );
+                              }
+                            )}
+                          </Select>
+                        </div>
+                        {/* Model */}
+                        <div className="w-28">
+                          <div className="mb-2 block">
+                            <Label
+                              htmlFor="model-mobile"
+                              value="Select model"
+                            />
+                          </div>
+                          <Select
+                            id="model-mobile"
+                            required
+                            value={data["model"]}
+                            onChange={(ev) => {
+                              const value = ev.target.value;
+                              setData({ ...data, model: value });
+                            }}
+                          >
+                            <option value="all">All</option>
+                            {models &&
+                              models.map((model) => {
+                                return (
+                                  <option
+                                    key={`model-mobile-${model}`}
+                                    value={model}
+                                  >
+                                    {model}
+                                  </option>
+                                );
+                              })}
+                          </Select>
+                        </div>
+                      </div>
+                    </Sidebar.Item>
+                  </Sidebar.ItemGroup>
+                  <Sidebar.ItemGroup>
+                    <Sidebar.Item>
+                      <div className="flex gap-2">
+                        {/* State */}
+                        <div className="w-28">
+                          <div className="mb-2 block">
+                            <Label
+                              htmlFor="state-mobile"
+                              value="Select state"
+                            />
+                          </div>
+                          <Select
+                            id="state-mobile"
+                            required
+                            value={data["state"]}
+                            onChange={(ev) => {
+                              const value = ev.target.value;
+                              setCities(state_city[value]);
+                              setData({
+                                ...data,
+                                state: value,
+                                city: "all",
+                              });
+                            }}
+                          >
+                            <option value="all">All</option>
+                            {Object.entries(state_city).map(
+                              ([state, cities]) => {
+                                return (
+                                  <option key={`maker_${state}`} value={state}>
+                                    {state}
+                                  </option>
+                                );
+                              }
+                            )}
+                          </Select>
+                        </div>
+                        {/* City */}
+                        <div className="w-28">
+                          <div className="mb-2 block">
+                            <Label htmlFor="city-mobile" value="Select city" />
+                          </div>
+                          <Select
+                            id="city-mobile"
+                            required
+                            value={data["city"]}
+                            onChange={(ev) => {
+                              const value = ev.target.value;
+                              setData({ ...data, city: value });
+                            }}
+                          >
+                            <option value="all">All</option>
+                            {cities &&
+                              cities.map((city) => {
+                                return (
+                                  <option key={`city_${city}`} value={city}>
+                                    {city}
+                                  </option>
+                                );
+                              })}
+                          </Select>
+                        </div>
+                      </div>
+                    </Sidebar.Item>
+                  </Sidebar.ItemGroup>
+
+                  {/* Checkbox Filters */}
+                  {filters.map((filter) => {
+                    return (
+                      <Sidebar.ItemGroup key={`${filter.id}-mobile`}>
+                        <Sidebar.Collapse
+                          open={mobileFiltersOpen ? false : true}
+                          icon={null}
+                          label={
+                            filter.name +
+                            (dataFilter[filter.id].length > 0
+                              ? " (" + dataFilter[filter.id].length + ")"
+                              : "")
+                          }
+                        >
+                          {filter.options.map((option, OpIndex) => {
+                            return (
+                              <Sidebar.Item
+                                key={`mobile-${filter.id}-${OpIndex}`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    id={`${option.label}-mobile`}
+                                    defaultValue={option.value}
+                                    defaultChecked={
+                                      dataFilter[filter.id] &&
+                                      dataFilter[filter.id].includes(
+                                        option.value
+                                      )
+                                        ? true
+                                        : option.checked
+                                    }
+                                    onChange={(ev) => {
+                                      onCheckboxFilter(
+                                        ev,
+                                        filter.id,
+                                        option.value
+                                      );
+                                    }}
+                                  />
+                                  <Label
+                                    htmlFor={`${option.label}-mobile`}
+                                    className="flex"
+                                  >
+                                    {option.value}
+                                  </Label>
+                                </div>
+                              </Sidebar.Item>
+                            );
+                          })}
+                        </Sidebar.Collapse>
+                      </Sidebar.ItemGroup>
+                    );
+                  })}
+
+                  <Sidebar.ItemGroup>
+                    <Button outline color="blue" onClick={onShowResultFilter}>
+                      Show Result
+                    </Button>
+                  </Sidebar.ItemGroup>
+                </Sidebar.Items>
               </div>
             </Sidebar>
           </Drawer.Items>
@@ -240,11 +480,11 @@ export default function CategoryFilter({
 
         {/* Main body */}
         <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-baseline justify-between border-b border-gray-200 pb-6 pt-24">
+          <div className="sm:flex items-baseline justify-between border-b border-gray-200 pb-6 pt-24">
             <h1 className="text-4xl font-bold tracking-tight text-indigo-800">
               {title}
             </h1>
-            <div className="flex items-center">
+            <div className="flex justify-self-end items-center pt-2 sm:pt-0">
               {/* Sort component */}
               <Dropdown
                 renderTrigger={() => (
@@ -281,6 +521,7 @@ export default function CategoryFilter({
                 </div>
               </Dropdown>
 
+              {/* View Grid component */}
               <button
                 type="button"
                 className="-m-2 ml-5 p-2 text-gray-400 hover:text-gray-500 sm:ml-7"
@@ -288,6 +529,8 @@ export default function CategoryFilter({
                 <span className="sr-only">View grid</span>
                 <Squares2X2Icon aria-hidden="true" className="size-5" />
               </button>
+
+              {/* Button filter mobile */}
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(true)}
@@ -300,7 +543,7 @@ export default function CategoryFilter({
           </div>
 
           {/* Car component */}
-          <section aria-labelledby="products-heading" className="pb-24 pt-6">
+          <section aria-labelledby="products-heading" className="pb-24 sm:pt-6">
             <h2 id="products-heading" className="sr-only">
               Products
             </h2>
@@ -309,8 +552,8 @@ export default function CategoryFilter({
               <div className="border-r border-gray-300">
                 <form className="hidden lg:block p-2">
                   <h3 className="sr-only">Categories</h3>
-                  {/* Maker / Model */}
                   <div className="border-b border-gray-200 pb-4">
+                    {/* Maker */}
                     <div className="pb-2">
                       <label
                         htmlFor="maker"
@@ -321,11 +564,12 @@ export default function CategoryFilter({
                       <select
                         name="maker"
                         id="maker"
+                        value={data["maker"]}
                         onChange={(ev) => {
                           const value = ev.target.value;
                           setModels(maker_model[value]);
-                          setDataSearch({
-                            ...dataSearch,
+                          setData({
+                            ...data,
                             maker: value,
                             model: "all",
                           });
@@ -343,6 +587,7 @@ export default function CategoryFilter({
                         })}
                       </select>
                     </div>
+                    {/* Model */}
                     <div className="pb-2">
                       <label
                         htmlFor="model"
@@ -353,9 +598,10 @@ export default function CategoryFilter({
                       <select
                         name="model"
                         id="model"
+                        value={data["model"]}
                         onChange={(ev) => {
                           const value = ev.target.value;
-                          setDataSearch({ ...dataSearch, model: value });
+                          setData({ ...data, model: value });
                         }}
                         className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg
                         focus:ring-blue-500 focus:border-blue-500 block"
@@ -372,8 +618,9 @@ export default function CategoryFilter({
                       </select>
                     </div>
                   </div>
-                  {/* State / City */}
+
                   <div className="border-b border-gray-200 pb-4">
+                    {/* State */}
                     <div className="pb-2">
                       <label
                         htmlFor="state"
@@ -384,11 +631,12 @@ export default function CategoryFilter({
                       <select
                         name="state"
                         id="state"
+                        value={data["state"]}
                         onChange={(ev) => {
                           const value = ev.target.value;
                           setCities(state_city[value]);
-                          setDataSearch({
-                            ...dataSearch,
+                          setData({
+                            ...data,
                             state: value,
                             city: "all",
                           });
@@ -406,6 +654,7 @@ export default function CategoryFilter({
                         })}
                       </select>
                     </div>
+                    {/* City */}
                     <div className="pb-2">
                       <label
                         htmlFor="city"
@@ -416,9 +665,10 @@ export default function CategoryFilter({
                       <select
                         name="city"
                         id="city"
+                        value={data["city"]}
                         onChange={(ev) => {
                           const value = ev.target.value;
-                          setDataSearch({ ...dataSearch, city: value });
+                          setData({ ...data, city: value });
                         }}
                         className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg
                         focus:ring-blue-500 focus:border-blue-500 block"
@@ -435,7 +685,8 @@ export default function CategoryFilter({
                       </select>
                     </div>
                   </div>
-                  {/* CarType / FuelType / State */}
+
+                  {/* CarType / FuelType */}
                   {filters.map((section) => (
                     <Disclosure
                       key={section.id}
@@ -445,7 +696,10 @@ export default function CategoryFilter({
                       <h3 className="flow-root">
                         <DisclosureButton className="group flex w-full items-center justify-between bg-gray-300 rounded-lg my-2 p-2 text-sm text-gray-900 hover:text-gray-400">
                           <span className="font-medium text-gray-900">
-                            {section.name}
+                            {section.name +
+                              (dataFilter[section.id].length > 0
+                                ? " (" + dataFilter[section.id].length + ")"
+                                : "")}
                           </span>
                           <span className="ml-6 flex items-center">
                             <PlusIcon
@@ -521,7 +775,7 @@ export default function CategoryFilter({
                       </DisclosurePanel>
                     </Disclosure>
                   ))}
-                  <Button onClick={onClickSearch} outline color="blue">
+                  <Button onClick={onShowResultFilter} outline color="gray">
                     Show Result
                   </Button>
                 </form>
@@ -530,26 +784,97 @@ export default function CategoryFilter({
               {/* Car grid */}
               <div className="lg:col-span-3">
                 {/* Your content */}
-                {/* Category select */}
-                <div className="border-b border-gray-200 pb-6 flex flex-wrap gap-2">
-                  {Categories &&
-                    Categories.map((category, index) => (
-                      <button
-                        key={`deskto_cate_${index}`}
-                        onClick={(ev) => onClickCategory(ev, category.name)}
-                        className={
-                          `rounded-xl px-3.5 py-2.5 text-sm font-medium shadow-lg bg-gray-50 hover:text-white border border-2 ${category.color} ` +
-                          (activeCate === category.name ? category.active : "")
+                {/* Search bar */}
+                <div className="flex flex-wrap gap-2">
+                  <div className="relative w-[75%]">
+                    <TextInput
+                      id="input-search-car"
+                      type="search"
+                      placeholder="Search"
+                      onClick={(ev) => {
+                        if (stringSearch) {
+                          setHiddenBoxSearch(false);
                         }
+                      }}
+                      onChange={(ev) => {
+                        var string = ev.target.value;
+                        setStringSearch(string);
+                        setLoadingSearch(true);
+                        if (string != "") {
+                          handleDebounceSearchCar(string);
+                          setHiddenBoxSearch(false);
+                        } else {
+                          setHiddenBoxSearch(true);
+                        }
+                      }}
+                    ></TextInput>
+                    <div
+                      className={
+                        `absolute top-[50px] z-10 ` +
+                        (hiddenBoxSearch ? "hidden" : "")
+                      }
+                    >
+                      <ListGroup
+                        id="list-group-search-car"
+                        className=" overflow-y-auto sm:w-[24rem] max-h-[12rem]"
                       >
-                        {category.name}
-                      </button>
-                    ))}
+                        {!loadingSearch &&
+                          carDebounce.length > 0 &&
+                          carDebounce.map((car, index) => {
+                            return (
+                              <ListGroup.Item
+                                key={`debounce_car_${index}`}
+                                onClick={() => {
+                                  navigateR(`/car/${car.id}/show`);
+                                  console.log("a");
+                                }}
+                              >
+                                {car.slug}
+                              </ListGroup.Item>
+                            );
+                          })}
+                        {!loadingSearch && carDebounce.length === 0 && (
+                          <div className="size-auto px-4 py-2">
+                            Not found cars
+                          </div>
+                        )}
+                        {loadingSearch && (
+                          <div className="size-auto px-4 py-2">
+                            <Spinner color="warning"></Spinner>
+                            <span className="mx-2">waiting...</span>
+                          </div>
+                        )}
+                      </ListGroup>
+                    </div>
+                  </div>
+                  <Button
+                    color="gray"
+                    outline
+                    onClick={(ev) => buttonSearchClick()}
+                  >
+                    Search
+                  </Button>
                 </div>
+
+                {/* text result */}
+                <div className="px-4 pt-2 text-sm">
+                  {!Array.isArray(resultFor) && (
+                    <span>
+                      The result for search: <strong>{resultFor}</strong>
+                    </span>
+                  )}
+                  {Array.isArray(resultFor) && (
+                    <span>
+                      The result for filter: <strong>{resultFor}</strong>
+                    </span>
+                  )}
+                </div>
+
                 {/* Car list */}
                 {loading && (
-                  <div className="text-center text-lg h-[24rem]">
-                    Loading...
+                  <div className="text-center text-lg my-24">
+                    Loading...{" "}
+                    <Spinner color="warning" aria-label="loading"></Spinner>
                   </div>
                 )}
                 {!loading && children}

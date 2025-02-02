@@ -26,7 +26,7 @@ Route::middleware([Cors::class])->group(function () {
             'index',
         ]);
         Route::get('/dashboard', [DashboardController::class, 'index']);
-        Route::get('/user-cars/{cate?}', [CarController::class, 'userCars']);
+        Route::get('/user-cars', [CarController::class, 'userCars']);
         Route::get('/user-cars-filter', [CarController::class, 'filterCars']);
         Route::get('/seed-cars', [CarController::class, 'seedCars']);
     });
@@ -41,7 +41,7 @@ Route::middleware([Cors::class])->group(function () {
 Route::get('/cars', [CarController::class, 'index']);
 Route::get('/car-show/{car}', [CarController::class, 'show']);
 Route::get('/cars/filter', [CarController::class, 'filterCars']);
-Route::get('/cars/{category}', [CarController::class, 'subCategoryCars']);
+Route::get('/search-cars', [CarController::class, 'searchCar']);
 Route::get('/get-new-cars', [CarController::class, 'newCars']);
 
 Route::post('/csrf-token', function () {

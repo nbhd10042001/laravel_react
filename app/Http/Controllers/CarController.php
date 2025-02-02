@@ -86,17 +86,19 @@ class CarController extends Controller
             $dataFeatures[$feature] = 1;
         }
 
-        $maker_id = Maker::where("name", $data['maker'])->first()->id;
-        $model_id = Model::where("name", $data['model'])->first()->id;
-        $state_id = State::where("name", $data['state'])->first()->id;
-        $city_id = City::where("name", $data['city'])->first()->id;
+        $maker = Maker::where("name", $data['maker'])->first();
+        $model = Model::where("name", $data['model'])->first();
+        $state = State::where("name", $data['state'])->first();
+        $city = City::where("name", $data['city'])->first();
         // remove unnecessary components
         $dataCar = Arr::except($data, $this->keysToRemove);
         // add new items
-        $dataCar['maker_id'] = $maker_id;
-        $dataCar['model_id'] = $model_id;
-        $dataCar['state_id'] = $state_id;
-        $dataCar['city_id'] = $city_id;
+        $dataCar['maker_id'] = $maker->id;
+        $dataCar['model_id'] = $model->id;
+        $dataCar['state_id'] = $state->id;
+        $dataCar['city_id'] = $city->id;
+        // update slug
+        $dataCar['slug'] = $data['year'] . ' - ' . $maker->name . ' ' . $model->name;
 
         // create new record car table in database
         $car = Car::create($dataCar);
@@ -130,14 +132,6 @@ class CarController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Car $car)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(UpdateCarRequest $request, Car $car)
@@ -159,17 +153,19 @@ class CarController extends Controller
             $dataFeatures[$feature] = 1;
         }
 
-        $maker_id = Maker::where("name", $data['maker'])->first()->id;
-        $model_id = Model::where("name", $data['model'])->first()->id;
-        $state_id = State::where("name", $data['state'])->first()->id;
-        $city_id = City::where("name", $data['city'])->first()->id;
+        $maker = Maker::where("name", $data['maker'])->first();
+        $model = Model::where("name", $data['model'])->first();
+        $state = State::where("name", $data['state'])->first();
+        $city = City::where("name", $data['city'])->first();
         // remove unnecessary components
         $dataCar = Arr::except($data, $this->keysToRemove);
         // add new items
-        $dataCar['maker_id'] = $maker_id;
-        $dataCar['model_id'] = $model_id;
-        $dataCar['state_id'] = $state_id;
-        $dataCar['city_id'] = $city_id;
+        $dataCar['maker_id'] = $maker->id;
+        $dataCar['model_id'] = $model->id;
+        $dataCar['state_id'] = $state->id;
+        $dataCar['city_id'] = $city->id;
+        // update slug
+        $dataCar['slug'] = $data['year'] . ' - ' . $maker->name . ' ' . $model->name;
 
         // features table...
         CarFeatures::where('car_id', $car->id)->update($dataFeatures);
@@ -326,27 +322,43 @@ class CarController extends Controller
         return CarResource::collection($cars);
     }
 
-    public function userCars(Request $request, string $cate = null)
+    public function searchCar(Request $request)
+    {
+        $data = $request->query();
+        $query = Car::query();
+
+        // if string search is empty, then return all cars.
+        if (is_null($data['string'])) {
+            if (!is_null($data['user_id'])) {
+                $query->where('user_id', $data['user_id']);
+            }
+            return CarResource::collection(
+                $query->with(['primaryImage', 'maker', 'model'])
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(12)
+            );
+        }
+
+        $query->where('slug', 'LIKE', '%' . $data['string'] . '%');
+        if (!is_null($data['user_id'])) {
+            $query->where('user_id', $data['user_id']);
+        }
+
+        $cars = $query->with(['primaryImage', 'maker', 'model'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(12)
+            ->withQueryString(); // keep query string each url page
+
+        return CarResource::collection($cars);
+    }
+
+    public function userCars(Request $request)
     {
         // return response(['user' => $request->user()], 400);
 
         $user_id = User::where('user_name', $request->user()->user_name)->first()->id;
         if (!$user_id) {
             return response("User not found", 400);
-        }
-
-        if ($cate) {
-            $maker_id = Maker::where('name', $cate)->first()->id;
-            if (!$maker_id) {
-                return response('Not found maker', 400);
-            }
-            return CarResource::collection(
-                Car::where('user_id', $user_id)
-                    ->with(['primaryImage', 'maker', 'model'])
-                    ->where('maker_id', $maker_id)
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(12)
-            );
         }
 
         return CarResource::collection(
@@ -391,22 +403,6 @@ class CarController extends Controller
             )
             ->has(CarFeatures::factory(), 'features')
             ->create();
-    }
-
-    public function subCategoryCars(Request $request, string $category)
-    {
-        $maker_id = Maker::where('name', $category)->first()->id;
-        if (!$maker_id) {
-            return response('Not found maker', 400);
-        }
-        $cars = CarResource::collection(
-            Car::
-                with(['primaryImage', 'maker', 'model'])
-                ->where('maker_id', $maker_id)
-                ->orderBy('created_at', 'desc')
-                ->paginate(12)
-        );
-        return $cars;
     }
 
     private function saveImage($image)

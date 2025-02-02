@@ -53,6 +53,7 @@ class CarResource extends JsonResource
             'fuel_type' => $this->fuel_type,
             'model' => $this->model->name,
             'maker' => $this->maker->name,
+            'slug' => $this->slug,
             'img_maker' => $this->maker->image ? URL::to($this->maker->image) : null,
             'city' => $this->city->name,
             'state' => $this->city->state->name,

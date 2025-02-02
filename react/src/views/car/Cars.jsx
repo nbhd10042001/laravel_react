@@ -16,9 +16,9 @@ export default function Cars() {
     getCars(url);
   };
 
-  const onSearchCarsClick = (payload) => {
+  const onFilterCarsHandle = (payload) => {
     axiosClient
-      .get(`/cars/filter`, {params: payload})
+      .get(`/cars/filter`, { params: payload })
       .then(({ data }) => {
         updateData(data);
       })
@@ -27,23 +27,19 @@ export default function Cars() {
       });
   };
 
-  const onCategoryClick = (cate) => {
-    if (cate === "All") {
-      getCars();
-      return;
-    }
-    var url = `/cars/${cate}`;
-    setLoading(true);
+  const onSearchCarHandle = (string) => {
+    const payload = {
+      string: string,
+      user_id: "",
+    };
+
     axiosClient
-      .get(url)
+      .get(`/search-cars`, { params: payload, withCredentials: true })
       .then(({ data }) => {
         updateData(data);
       })
       .catch((error) => {
-        navigateR(window.location.pathname, true, {
-          code: error.response.status,
-          mess: error.response.statusText,
-        });
+        console.log(error);
       });
   };
 
@@ -60,8 +56,7 @@ export default function Cars() {
           code: error.response.status,
           mess: error.response.statusText,
         });
-      })
-      ;
+      });
   };
 
   const updateData = (data) => {
@@ -80,11 +75,15 @@ export default function Cars() {
     <CategoryFilter
       title={"Cars"}
       loading={loading}
-      categoryClick={onCategoryClick}
-      searchCarsClick={onSearchCarsClick}
+      filterCarsHandle={onFilterCarsHandle}
+      searchCarHandle={onSearchCarHandle}
+      userId={''}
     >
       <div>
-        <CarLists cars={cars}></CarLists>
+        {cars.length > 0 && <CarLists cars={cars}></CarLists>}
+        {cars.length === 0 && (
+          <div className="text-center font-medium my-24">Cars not found...</div>
+        )}
         {meta.links && (
           <PaginationLinks
             meta={meta}

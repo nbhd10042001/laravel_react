@@ -18,6 +18,7 @@ class Car extends EloquentModel
     protected $fillable = [
         'maker_id',
         'model_id',
+        'slug',
         'year',
         'price',
         'vin',

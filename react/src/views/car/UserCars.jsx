@@ -10,17 +10,16 @@ export default function UserCars() {
   const [meta, setMeta] = useState({});
   const [links, setLinks] = useState({});
   const [loading, setLoading] = useState(false);
-  const { navigateR, userToken } = useStateContext();
+  const { navigateR, userToken, currentUser } = useStateContext();
 
   const onPageClick = (url) => {
     getCars(url);
   };
 
-  const onSearchCarsClick = (payload) => {
+  const onFilterCarsHandle = (payload) => {
     axiosClient
-      .get(`/user-cars-filter`, {params: payload, withCredentials: true})
+      .get(`/user-cars-filter`, { params: payload, withCredentials: true })
       .then(({ data }) => {
-        console.log(data);
         updateData(data);
       })
       .catch((error) => {
@@ -28,40 +27,34 @@ export default function UserCars() {
       });
   };
 
-  const onCategoryClick = (cate) => {
-    if (cate === "All") {
-      getCars();
-      return;
-    }
-    var url = `/user-cars/${cate}`;
-    setLoading(true);
+  const onSearchCarHandle = (string) => {
+    const payload = {
+      string: string,
+      user_id: currentUser.id,
+    };
+
     axiosClient
-      .get(url)
+      .get(`/search-cars`, { params: payload, withCredentials: true })
       .then(({ data }) => {
         updateData(data);
       })
-      // .catch((error) => {
-      //   navigateR(window.location.pathname, true, {
-      //     code: error.response.status,
-      //     mess: error.response.statusText,
-      //   });
-      // });
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const getCars = (url) => {
     url = url || "/user-cars";
     setLoading(true);
-    axiosClient
-      .get(url)
-      .then(({ data }) => {
-        updateData(data);
-      })
-      // .catch((error) => {
-      //   navigateR(window.location.pathname, true, {
-      //     code: error.response.status,
-      //     mess: error.response.statusText,
-      //   });
-      // });
+    axiosClient.get(url).then(({ data }) => {
+      updateData(data);
+    });
+    // .catch((error) => {
+    //   navigateR(window.location.pathname, true, {
+    //     code: error.response.status,
+    //     mess: error.response.statusText,
+    //   });
+    // });
   };
 
   const updateData = (data) => {
@@ -83,11 +76,15 @@ export default function UserCars() {
     <CategoryFilter
       title={"Your Cars"}
       loading={loading}
-      categoryClick={onCategoryClick}
-      searchCarsClick={onSearchCarsClick}
+      filterCarsHandle={onFilterCarsHandle}
+      searchCarHandle={onSearchCarHandle}
+      userId={currentUser.id}
     >
       <div>
-        <CarLists cars={cars}></CarLists>
+        {cars.length > 0 && <CarLists cars={cars}></CarLists>}
+        {cars.length === 0 && (
+          <div className="text-center font-medium my-24">Cars not found...</div>
+        )}
         {meta.links && (
           <PaginationLinks
             meta={meta}

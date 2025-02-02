@@ -25,13 +25,19 @@ class CarFactory extends Factory
      */
     public function definition(): array
     {
+        $maker = Maker::inRandomOrder()->first();
+        $model = Model::where('maker_id', $maker->id)->inRandomOrder()->first();
+        $year = fake()->year();
+        $slug = $year . ' - ' . $maker->name . ' ' . $model->name;
         return [
-            'maker_id' => Maker::inRandomOrder()->first()->id,
-            'model_id' => function (array $attributes) {
-                return Model::where('maker_id', $attributes['maker_id'])
-                    ->inRandomOrder()->first()->id;
-            },
-            'year' => fake()->year(),
+            'maker_id' => $maker->id,
+            // 'model_id' => function (array $attributes) {
+            //     return Model::where('maker_id', $attributes['maker_id'])
+            //     ->inRandomOrder()->first()->id;
+            // },
+            'model_id' => $model->id,
+            'year' => $year,
+            'slug' => $slug,
             'price' => ((int) fake()->randomFloat(2, 5, 100)) * 1000,
             'vin' => strtoupper(Str::random(17)),
             'mileage' => ((int) fake()->randomFloat(2, 5, 500)) * 1000,

@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/solid";
 import CarouselMobile from "./CarouselMobile";
 import CarouselDesktop from "./CarouselDesktop";
+import { Link } from "react-router-dom";
 
 export default function BentoGrid() {
   const [car, setCar] = useState();
@@ -129,6 +130,10 @@ export default function BentoGrid() {
                       <p className="font-small text-dark-200 ml-4">
                         {car && car.phone}
                       </p>
+                    </div>
+
+                    <div className="flex mt-2 text-md font-medium tracking-tight text-gray-950 max-lg:text-center">
+                      <Link className="text-sm text-indigo-600 underline hover:text-indigo-400" to={`/car/${car.id}/show`}><i>View detail</i></Link>
                     </div>
                   </div>
                 </div>

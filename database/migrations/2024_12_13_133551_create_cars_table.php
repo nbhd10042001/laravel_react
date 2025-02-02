@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('fuel_type', 255);
             $table->foreignId('maker_id')->constrained('makers');
             $table->foreignId('model_id')->constrained('models');
+            $table->string('slug', 255)->nullable();
             $table->foreignId('city_id')->constrained('cities');
             $table->foreignId('state_id')->constrained('states');
             $table->integer('mileage');
