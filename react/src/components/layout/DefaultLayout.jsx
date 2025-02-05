@@ -27,7 +27,6 @@ import {
   PlayCircleIcon,
 } from "@heroicons/react/20/solid";
 import { Link, Outlet, redirect } from "react-router-dom";
-import { ToastCustom } from "../ToastCustom";
 import { useStateContext } from "../../contexts/ContextProvider";
 import axiosClient from "../../axios";
 import {
@@ -41,6 +40,9 @@ import {
   TextInput,
 } from "flowbite-react";
 import { FooterComponent } from "../FooterComponent";
+import { ToastCustom } from "../ToastCustom";
+import { DialogComponent } from "../DialogComponent";
+import Cart from "../core/Cart";
 
 const navigates = [
   {
@@ -61,7 +63,7 @@ const navigates = [
     ],
   },
   {
-    roles: ["Seller", "Admin"],
+    roles: ["Seller", "Admin", "Member"],
     nameNav: "Manage",
     itemNav: [
       {
@@ -150,7 +152,7 @@ export default function DefaultLayout() {
       .then((res) => {
         setCurrentUser({});
         setUserToken(null);
-        window.location.href = '/';
+        window.location.href = "/";
       })
       .catch((error) => {
         navigateR(window.location.pathname, true, {
@@ -158,6 +160,19 @@ export default function DefaultLayout() {
           mess: error.response.statusText,
         });
       });
+  };
+
+  const handleCompanyAbout = (name) => {
+    navigateR("/");
+    let scrollTop = 0;
+    if (name === "About") {
+      var element = document.getElementById("section_testimonial");
+      if (element) {
+        var rect = element.getBoundingClientRect();
+        scrollTop = rect.top;
+      }
+    }
+    window.scrollTo({ top: scrollTop, behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -175,17 +190,19 @@ export default function DefaultLayout() {
         >
           {/* Logo Company */}
           <div className="flex lg:flex-1">
-            <a href="#" className="-m-1.5 p-1.5">
+            <a href="/" className="-m-1.5 p-1.5">
               <span className="sr-only">Your Company</span>
               <img
                 alt=""
-                src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
+                src={`${
+                  import.meta.env.VITE_API_BASE_URL
+                }/images/logo_company/logo3.png`}
                 className="h-8 w-auto"
               />
             </a>
           </div>
 
-          {/* Desktop render navigate */}
+          {/* Desktop render navigates */}
           <PopoverGroup className="hidden lg:flex lg:gap-x-12">
             {navigates.map((navigate, index) => {
               if (navigate.roles && !navigate.roles.includes(userRole)) {
@@ -206,7 +223,11 @@ export default function DefaultLayout() {
                         </>
                       )}
                       {!navigate.itemNav && (
-                        <Link to={navigate.to}>{navigate.nameNav}</Link>
+                        <Link
+                          onClick={() => handleCompanyAbout(navigate.nameNav)}
+                        >
+                          {navigate.nameNav}
+                        </Link>
                       )}
                       <div className="absolute w-full h-1 bg-white top-10 hidden group-hover:block"></div>
                     </div>
@@ -288,12 +309,19 @@ export default function DefaultLayout() {
             {userToken && (
               <button type="button" onClick={() => setIsOpen(true)}>
                 <span className="sr-only">Open main menu</span>
-                <Avatar img={currentUser.image} rounded></Avatar>
+                <Avatar
+                  img={currentUser.image}
+                  rounded
+                  className="hover:opacity-70"
+                ></Avatar>
               </button>
             )}
             {!userToken && (
               <div>
-                <Link to="/login" className="flex text-dark font-medium">
+                <Link
+                  to="/login"
+                  className="flex text-dark font-medium hover:opacity-70"
+                >
                   Login
                   <ArrowRightEndOnRectangleIcon className="size-6 flex-none ml-1"></ArrowRightEndOnRectangleIcon>
                 </Link>
@@ -328,36 +356,51 @@ export default function DefaultLayout() {
                             {/* if nav have child */}
                             {navigate.itemNav && (
                               <SidebarCollapse
+                                className="hover:text-indigo-600"
                                 open={isOpen ? false : true}
-                                label={navigate.nameNav}
+                                label={
+                                  <span className="font-medium">
+                                    {navigate.nameNav}
+                                  </span>
+                                }
                               >
-                                {navigate.itemNav.map((item, index) => {
-                                  return (
-                                    <div key={`item-menu-${index}`}>
+                                <div>
+                                  {navigate.itemNav.map((item, index) => {
+                                    return (
                                       <Sidebar.Item
-                                        className={`cursor-pointer`}
+                                        key={`item-menu-${index}`}
+                                        className={
+                                          "cursor-pointer hover:text-indigo-500"
+                                        }
                                         onClick={() => {
                                           setIsOpen(false);
                                           navigateR(item.to);
                                         }}
                                       >
-                                        {item.name}
+                                        <div className="flex gap-2 items-center">
+                                          <div className="bg-gray-100 p-2 rounded-lg text-indigo-700">
+                                            <item.icon className="w-4 h-4"></item.icon>
+                                          </div>
+                                          <span>{item.name}</span>
+                                        </div>
                                       </Sidebar.Item>
-                                    </div>
-                                  );
-                                })}
+                                    );
+                                  })}
+                                </div>
                               </SidebarCollapse>
                             )}
                             {/* if nav not have child */}
                             {!navigate.itemNav && (
                               <Sidebar.Item
-                                className={`cursor-pointer`}
+                                className={`cursor-pointer hover:text-indigo-600`}
                                 onClick={() => {
                                   setIsOpen(false);
                                   navigateR(navigate.to);
                                 }}
                               >
-                                {navigate.nameNav}
+                                <span className="font-medium">
+                                  {navigate.nameNav}
+                                </span>
                               </Sidebar.Item>
                             )}
                           </div>
@@ -395,13 +438,21 @@ export default function DefaultLayout() {
                             return (
                               <div key={`userNav-menu-${index}`}>
                                 <Sidebar.Item
-                                  className={`cursor-pointer`}
+                                  className={`cursor-pointer hover:text-indigo-600`}
                                   onClick={(event) => {
                                     setIsOpen(false);
                                     userNav.handleClickEvent(event);
                                   }}
                                 >
-                                  {userNav.name}
+                                  <span
+                                    className={
+                                      userNav.name === "Logout"
+                                        ? "text-red-500 font-medium"
+                                        : ""
+                                    }
+                                  >
+                                    {userNav.name}
+                                  </span>
                                 </Sidebar.Item>
                               </div>
                             );
@@ -417,7 +468,9 @@ export default function DefaultLayout() {
                               navigateR("/login");
                             }}
                           >
-                            Login
+                            <span className="font-medium text-indigo-700">
+                              Login
+                            </span>
                           </Sidebar.Item>
                           <Sidebar.Item
                             className={`cursor-pointer`}
@@ -425,7 +478,9 @@ export default function DefaultLayout() {
                               navigateR("/signup");
                             }}
                           >
-                            Signup
+                            <span className="font-medium text-indigo-700">
+                              Signup
+                            </span>
                           </Sidebar.Item>
                         </div>
                       )}
@@ -447,7 +502,7 @@ export default function DefaultLayout() {
           <DialogPanel className="fixed inset-y-0 right-0 z-20 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
             {/* logo company */}
             <div className="flex items-center justify-between">
-              <a href="#" className="-m-1.5 p-1.5">
+              <a href="/" className="-m-1.5 p-1.5">
                 <span className="sr-only">Your Company</span>
                 <img
                   alt=""
@@ -607,7 +662,8 @@ export default function DefaultLayout() {
         <Outlet></Outlet>
       </div>
 
-      <FooterComponent></FooterComponent>
+      {/* Modal */}
+      <DialogComponent></DialogComponent>
 
       {/* Toast Box */}
       <div
@@ -627,6 +683,12 @@ export default function DefaultLayout() {
             );
           })}
       </div>
+
+      {/* Shoping Cart */}
+      {userToken && <Cart></Cart>}
+
+      {/* Footer */}
+      <FooterComponent></FooterComponent>
     </div>
   );
 }

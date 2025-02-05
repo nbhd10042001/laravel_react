@@ -17,6 +17,8 @@ const StateContext = createContext({
   boxToast: [],
   showDialog: () => {},
   urlRedirect: null,
+  cart: [],
+  updateCart: () => {},
 });
 
 export const ContextProvider = ({ children }) => {
@@ -42,6 +44,32 @@ export const ContextProvider = ({ children }) => {
   const [dialog, setDialog] = useState(false);
   const [urlRedirect, setUrlRedirect] = useState("/");
   const [userRole, setUserRole] = useState();
+  const [cart, setCart] = useState([]);
+
+  // call api to get current user name and load cart in localstorage
+  useEffect(() => {
+    if (userToken) {
+      axiosClient
+        .get("/me")
+        .then(({ data }) => {
+          const userName = data.user.user_name;
+          if (userName) {
+            setCart(JSON.parse(localStorage.getItem(`cart_${userName}`)));
+          }
+        })
+        .catch((err) => {
+          router.navigate(`/error/${err.response.status}`);
+        });
+    }
+  }, []);
+
+  const updateCart = (newCart) => {
+    setCart(newCart);
+    localStorage.setItem(
+      `cart_${currentUser.user_name}`,
+      JSON.stringify(newCart)
+    );
+  };
 
   const navigateR = (
     path = "/",
@@ -64,6 +92,7 @@ export const ContextProvider = ({ children }) => {
       localStorage.removeItem("TOKEN");
     }
     _setUserToken(token);
+    window.location.href = '/';
   };
 
   const updateCurrentUser = () => {
@@ -101,7 +130,7 @@ export const ContextProvider = ({ children }) => {
       });
   };
 
-  const showToast = (message, type) => {
+  const showToast = (message, type = "success") => {
     const newBox = [...boxToast];
     newBox.push({ message: message, type: type, id: uuidv4() });
     setBoxToast(newBox);
@@ -111,8 +140,8 @@ export const ContextProvider = ({ children }) => {
     setDialog(open);
   };
 
-  // generate token and refresh token when reload window
-  const refreshToken = () => {
+  // generate token and refresh token csrf when reload window
+  const refreshTokenCSRF = () => {
     axiosClient
       .post("csrf-token")
       .then((res) => {
@@ -127,7 +156,7 @@ export const ContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    refreshToken();
+    refreshTokenCSRF();
   }, []);
 
   return (
@@ -149,6 +178,8 @@ export const ContextProvider = ({ children }) => {
         showToast,
         dialog,
         showDialog,
+        cart,
+        updateCart,
       }}
     >
       {children}

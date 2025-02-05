@@ -81,7 +81,7 @@ export default function UserCars() {
       userId={currentUser.id}
     >
       <div>
-        {cars.length > 0 && <CarLists cars={cars}></CarLists>}
+        {cars.length > 0 && <CarLists cars={cars} haveEdit={true}></CarLists>}
         {cars.length === 0 && (
           <div className="text-center font-medium my-24">Cars not found...</div>
         )}

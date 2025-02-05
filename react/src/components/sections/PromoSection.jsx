@@ -1,4 +1,5 @@
 import { Button } from "flowbite-react";
+import SearchBar from "../car/SeachBar";
 
 const images = [
   `${import.meta.env.VITE_API_BASE_URL}/images/car/car_image_section/car1.png`,
@@ -74,9 +75,10 @@ export default function PromoSection() {
                     </div>
                   </div>
                 </div>
-                <Button outline color="gray">
-                  Car Collection
-                </Button>
+                {/* search bar */}
+                <div className="w-[100%] lg:w-[50%]">
+                  <SearchBar haveBtnSearch={false}></SearchBar>
+                </div>
               </div>
             </div>
           </div>

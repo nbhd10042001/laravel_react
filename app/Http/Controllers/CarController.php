@@ -234,9 +234,21 @@ class CarController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Car $car)
+    public function destroy(Car $car, Request $request)
     {
-        //
+        $user = $request->user();
+        if ($user->id !== $car->user_id) {
+            return abort(403, 'Unauthorized action.');
+        }
+        $car->delete();
+
+        // // If there is an old image, delete it
+        // if ($car->image) {
+        //     $absolutePath = public_path($car->image);
+        //     File::delete($absolutePath);
+        // }
+
+        return response('', 204);
     }
 
     // other function -------------------------------//

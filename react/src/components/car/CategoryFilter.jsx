@@ -22,14 +22,11 @@ import {
   Drawer,
   Dropdown,
   Label,
-  ListGroup,
   Select,
   Sidebar,
   Spinner,
-  TextInput,
 } from "flowbite-react";
-import axiosClient from "../../axios";
-import { useStateContext } from "../../contexts/ContextProvider";
+import SearchBar from "./SeachBar";
 
 const sortOptions = [
   { name: "Newest", id: "newest", icon: ArrowUpCircleIcon },
@@ -142,19 +139,13 @@ export default function CategoryFilter({
   searchCarHandle,
   userId,
 }) {
-  const { navigateR } = useStateContext();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [hiddenBoxSearch, setHiddenBoxSearch] = useState(true);
-  const [loadingSearch, setLoadingSearch] = useState(true);
-  const [carDebounce, setCarDebounce] = useState([]);
-  const timer = useRef(null);
   const handleClose = () => setMobileFiltersOpen(false);
   const [activeSort, setActiveSort] = useState(sortOptions[0].id);
   const [nameSort, setNameSort] = useState(sortOptions[0].name);
   const [models, setModels] = useState([]);
   const [cities, setCities] = useState([]);
   const [data, setData] = useState({ ...temp_filters });
-  const [stringSearch, setStringSearch] = useState("");
   const [dataFilter, setDataFilter] = useState({
     car_type: [],
     fuel_type: [],
@@ -182,6 +173,11 @@ export default function CategoryFilter({
     };
     filterCarsHandle(payload);
   };
+
+  const onButtonSearchClick = (stringSearch ) => {
+    searchCarHandle(stringSearch);
+    setResultFor(stringSearch !== "" ? stringSearch : "all");
+  }
 
   const onShowResultFilter = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -216,44 +212,6 @@ export default function CategoryFilter({
       })
     );
   };
-
-  // debounce search car
-  const apiDebounce = (string) => {
-    setLoadingSearch(true);
-    const payload = {
-      string: string,
-      user_id: userId,
-    };
-    axiosClient
-      .get(`/search-cars`, { params: payload, withCredentials: true })
-      .then(({ data }) => {
-        setLoadingSearch(false);
-        setCarDebounce(data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const handleDebounceSearchCar = (string) => {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => apiDebounce(string), 300);
-  };
-
-  const buttonSearchClick = () => {
-    searchCarHandle(stringSearch);
-    setResultFor(stringSearch !== "" ? stringSearch : "all");
-  };
-
-  useEffect(() => {
-    const inputElem = document.getElementById(`input-search-car`);
-    const listElem = document.getElementById(`list-group-search-car`);
-    document.addEventListener("click", (e) => {
-      if (e.target !== inputElem && e.target !== listElem) {
-        setHiddenBoxSearch(true);
-      }
-    });
-  }, []);
 
   return (
     <div className="bg-white -mt-[5rem]">
@@ -785,76 +743,7 @@ export default function CategoryFilter({
               <div className="lg:col-span-3">
                 {/* Your content */}
                 {/* Search bar */}
-                <div className="flex flex-wrap gap-2">
-                  <div className="relative w-[75%]">
-                    <TextInput
-                      id="input-search-car"
-                      type="search"
-                      placeholder="Search"
-                      onClick={(ev) => {
-                        if (stringSearch) {
-                          setHiddenBoxSearch(false);
-                        }
-                      }}
-                      onChange={(ev) => {
-                        var string = ev.target.value;
-                        setStringSearch(string);
-                        setLoadingSearch(true);
-                        if (string != "") {
-                          handleDebounceSearchCar(string);
-                          setHiddenBoxSearch(false);
-                        } else {
-                          setHiddenBoxSearch(true);
-                        }
-                      }}
-                    ></TextInput>
-                    <div
-                      className={
-                        `absolute top-[50px] z-10 ` +
-                        (hiddenBoxSearch ? "hidden" : "")
-                      }
-                    >
-                      <ListGroup
-                        id="list-group-search-car"
-                        className=" overflow-y-auto sm:w-[24rem] max-h-[12rem]"
-                      >
-                        {!loadingSearch &&
-                          carDebounce.length > 0 &&
-                          carDebounce.map((car, index) => {
-                            return (
-                              <ListGroup.Item
-                                key={`debounce_car_${index}`}
-                                onClick={() => {
-                                  navigateR(`/car/${car.id}/show`);
-                                  console.log("a");
-                                }}
-                              >
-                                {car.slug}
-                              </ListGroup.Item>
-                            );
-                          })}
-                        {!loadingSearch && carDebounce.length === 0 && (
-                          <div className="size-auto px-4 py-2">
-                            Not found cars
-                          </div>
-                        )}
-                        {loadingSearch && (
-                          <div className="size-auto px-4 py-2">
-                            <Spinner color="warning"></Spinner>
-                            <span className="mx-2">waiting...</span>
-                          </div>
-                        )}
-                      </ListGroup>
-                    </div>
-                  </div>
-                  <Button
-                    color="gray"
-                    outline
-                    onClick={(ev) => buttonSearchClick()}
-                  >
-                    Search
-                  </Button>
-                </div>
+                <SearchBar userId={userId} onButtonSearchClick={onButtonSearchClick}></SearchBar>
 
                 {/* text result */}
                 <div className="px-4 pt-2 text-sm">

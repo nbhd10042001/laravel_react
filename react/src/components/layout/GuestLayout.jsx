@@ -3,8 +3,8 @@ import { useStateContext } from "../../contexts/ContextProvider";
 
 export default function GuestLayout() {
   const { userToken } = useStateContext();
-  if(userToken){
-    return <Navigate to="/"></Navigate>
+  if (userToken) {
+    return <Navigate to="/"></Navigate>;
   }
 
   return (
@@ -13,12 +13,14 @@ export default function GuestLayout() {
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <img
             alt="Your Company"
-            src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
-            className="mx-auto h-10 w-auto"
+            src={`${
+              import.meta.env.VITE_API_BASE_URL
+            }/images/logo_company/logo3.png`}
+            className="mx-auto h-14 w-auto hover:cursor-pointer"
+            onClick={() => {
+              window.location.href = "/";
+            }}
           />
-          {/* <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-            Sign in to your account
-          </h2> */}
         </div>
         <Outlet></Outlet>
       </div>
