@@ -81,8 +81,8 @@ export default function SignUp() {
 
   return (
     <>
-      <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-        Sign Up
+      <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-indigo-700">
+        Signup new account
       </h2>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
@@ -90,7 +90,7 @@ export default function SignUp() {
           onSubmit={onSubmit}
           action="#"
           method="POST"
-          className="space-y-6"
+          className="space-y-4"
         >
           {/* form sign up */}
           <div>

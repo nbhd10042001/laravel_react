@@ -19,6 +19,7 @@ import {
   Cog6ToothIcon,
   FingerPrintIcon,
   IdentificationIcon,
+  PlusCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -46,49 +47,42 @@ import Cart from "../core/Cart";
 
 const navigates = [
   {
-    nameNav: "Car",
-    itemNav: [
-      {
-        name: "Cars",
-        description: "View all cars",
-        to: "/cars",
-        icon: ArchiveBoxIcon,
-      },
-      {
-        name: "Surveys",
-        description: "Answer surveys",
-        to: "/surveys",
-        icon: FingerPrintIcon,
-      },
-    ],
+    nameNav: "Cars",
+    to: "/cars",
+    itemNav: null,
+  },
+  {
+    nameNav: "Surveys",
+    to: "/surveys",
+    itemNav: null,
+  },
+  {
+    nameNav: "Contact",
+    itemNav: null,
+    to: "/contact",
+  },
+  {
+    nameNav: "Policy",
+    itemNav: null,
+    to: "/policy",
   },
   {
     roles: ["Seller", "Admin", "Member"],
     nameNav: "Manage",
     itemNav: [
       {
+        name: "Create Car",
+        description: "Create your new car",
+        to: "/car/create",
+        icon: PlusCircleIcon,
+      },
+      {
         name: "Your Cars",
-        description: "View all your cars",
+        description: "View all your cars created",
         to: `/your-cars`,
         icon: ArchiveBoxIcon,
       },
-      {
-        name: "Create Car",
-        description: "Create new car",
-        to: "/car/create",
-        icon: ArchiveBoxIcon,
-      },
     ],
-  },
-  {
-    nameNav: "Company",
-    itemNav: null,
-    to: "/",
-  },
-  {
-    nameNav: "About",
-    itemNav: null,
-    to: "/",
   },
 ];
 
@@ -109,8 +103,7 @@ export default function DefaultLayout() {
     navigateR,
   } = useStateContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const handleClose = () => setIsOpen(false);
+  const handleClose = () => setMobileMenuOpen(false);
 
   // navigates -----------------------------//
   const userNavigation = [
@@ -162,19 +155,6 @@ export default function DefaultLayout() {
       });
   };
 
-  const handleCompanyAbout = (name) => {
-    navigateR("/");
-    let scrollTop = 0;
-    if (name === "About") {
-      var element = document.getElementById("section_testimonial");
-      if (element) {
-        var rect = element.getBoundingClientRect();
-        scrollTop = rect.top;
-      }
-    }
-    window.scrollTo({ top: scrollTop, behavior: "smooth" });
-  };
-
   useEffect(() => {
     document.getElementById("box-toast").innerHTML = ""; // clear all toast
     updateCurrentUser();
@@ -183,7 +163,7 @@ export default function DefaultLayout() {
   return (
     <div className="overflow-hidden relative">
       {/* header */}
-      <header className="bg-dark-custom shadow-md fixed w-full h-[5rem] z-20">
+      <div className="bg-dark-custom shadow-md fixed w-full h-[5rem] z-20">
         <nav
           aria-label="Global"
           className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8"
@@ -223,11 +203,7 @@ export default function DefaultLayout() {
                         </>
                       )}
                       {!navigate.itemNav && (
-                        <Link
-                          onClick={() => handleCompanyAbout(navigate.nameNav)}
-                        >
-                          {navigate.nameNav}
-                        </Link>
+                        <Link to={navigate.to}>{navigate.nameNav}</Link>
                       )}
                       <div className="absolute w-full h-1 bg-white top-10 hidden group-hover:block"></div>
                     </div>
@@ -295,8 +271,7 @@ export default function DefaultLayout() {
           <div className="flex lg:hidden">
             <button
               type="button"
-              // onClick={() => setMobileMenuOpen(true)}
-              onClick={() => setIsOpen(true)}
+              onClick={() => setMobileMenuOpen(true)}
               className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
             >
               <span className="sr-only">Open main menu</span>
@@ -307,7 +282,7 @@ export default function DefaultLayout() {
           {/* Login/logout desktop */}
           <div className="hidden lg:flex lg:flex-1 lg:justify-end text-white">
             {userToken && (
-              <button type="button" onClick={() => setIsOpen(true)}>
+              <button type="button" onClick={() => setMobileMenuOpen(true)}>
                 <span className="sr-only">Open main menu</span>
                 <Avatar
                   img={currentUser.image}
@@ -331,7 +306,7 @@ export default function DefaultLayout() {
         </nav>
 
         {/* Drawer panel navigate */}
-        <Drawer open={isOpen} onClose={handleClose} position="right">
+        <Drawer open={mobileMenuOpen} onClose={handleClose} position="right">
           <Drawer.Header title="MENU" titleIcon={() => <></>} />
           <Drawer.Items>
             <Sidebar
@@ -357,7 +332,7 @@ export default function DefaultLayout() {
                             {navigate.itemNav && (
                               <SidebarCollapse
                                 className="hover:text-indigo-600"
-                                open={isOpen ? false : true}
+                                open={mobileMenuOpen ? false : true}
                                 label={
                                   <span className="font-medium">
                                     {navigate.nameNav}
@@ -373,7 +348,7 @@ export default function DefaultLayout() {
                                           "cursor-pointer hover:text-indigo-500"
                                         }
                                         onClick={() => {
-                                          setIsOpen(false);
+                                          setMobileMenuOpen(false);
                                           navigateR(item.to);
                                         }}
                                       >
@@ -394,7 +369,7 @@ export default function DefaultLayout() {
                               <Sidebar.Item
                                 className={`cursor-pointer hover:text-indigo-600`}
                                 onClick={() => {
-                                  setIsOpen(false);
+                                  setMobileMenuOpen(false);
                                   navigateR(navigate.to);
                                 }}
                               >
@@ -413,7 +388,7 @@ export default function DefaultLayout() {
                       {/* if user login */}
                       {userToken && (
                         <SidebarCollapse
-                          open={isOpen ? false : true}
+                          open={mobileMenuOpen ? false : true}
                           label={
                             <div className="flex">
                               <Avatar img={currentUser.image} rounded></Avatar>
@@ -440,7 +415,7 @@ export default function DefaultLayout() {
                                 <Sidebar.Item
                                   className={`cursor-pointer hover:text-indigo-600`}
                                   onClick={(event) => {
-                                    setIsOpen(false);
+                                    setMobileMenuOpen(false);
                                     userNav.handleClickEvent(event);
                                   }}
                                 >
@@ -491,166 +466,7 @@ export default function DefaultLayout() {
             </Sidebar>
           </Drawer.Items>
         </Drawer>
-
-        {/* Mobile render navigate (not using this) */}
-        <Dialog
-          open={mobileMenuOpen}
-          onClose={setMobileMenuOpen}
-          className="lg:hidden"
-        >
-          <div className="fixed inset-0 z-20" />
-          <DialogPanel className="fixed inset-y-0 right-0 z-20 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
-            {/* logo company */}
-            <div className="flex items-center justify-between">
-              <a href="/" className="-m-1.5 p-1.5">
-                <span className="sr-only">Your Company</span>
-                <img
-                  alt=""
-                  src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
-                  className="h-8 w-auto"
-                />
-              </a>
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="-m-2.5 rounded-md p-2.5 text-gray-700"
-              >
-                <span className="sr-only">Close menu</span>
-                <XMarkIcon aria-hidden="true" className="size-6" />
-              </button>
-            </div>
-            {/* Menu navigate mobile */}
-            <div className="mt-6 flow-root">
-              <div className="-my-6 divide-y divide-gray-500/10">
-                <div className="space-y-2 py-6">
-                  {navigates.map((navigate, index) => {
-                    return (
-                      <Disclosure
-                        as="div"
-                        className="-mx-3"
-                        key={`mobileNav_${index}`}
-                      >
-                        {/* name Nav */}
-                        {navigate.itemNav && (
-                          <DisclosureButton className="group flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                            {navigate.nameNav}
-                            <ChevronDownIcon
-                              aria-hidden="true"
-                              className="size-5 flex-none group-data-[open]:rotate-180"
-                            />
-                          </DisclosureButton>
-                        )}
-                        {!navigate.itemNav && (
-                          <Link
-                            to={navigate.to}
-                            onClick={(ev) => setMobileMenuOpen(false)}
-                          >
-                            <DisclosureButton className="group flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                              {navigate.nameNav}
-                            </DisclosureButton>
-                          </Link>
-                        )}
-
-                        {/* items nav */}
-                        <DisclosurePanel className="mt-2 space-y-2">
-                          {navigate.itemNav &&
-                            navigate.itemNav.map((item) => (
-                              <Link
-                                key={item.name}
-                                to={item.to}
-                                onClick={(ev) => setMobileMenuOpen(false)}
-                                className="block rounded-lg py-2 pl-6 pr-3 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50"
-                              >
-                                {item.name}
-                              </Link>
-                            ))}
-                          {navigate.nameNav === "Product" &&
-                            callsToAction.map((item) => {
-                              return (
-                                <Link
-                                  key={item.name}
-                                  to={item.to}
-                                  onClick={(ev) => setMobileMenuOpen(false)}
-                                  className="block rounded-lg py-2 pl-6 pr-3 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50"
-                                >
-                                  {item.name}
-                                </Link>
-                              );
-                            })}
-                        </DisclosurePanel>
-                      </Disclosure>
-                    );
-                  })}
-                </div>
-
-                {/* Login/Logout mobile*/}
-                <div className="py-6">
-                  {userToken && (
-                    <Disclosure as="div" className="-mx-3">
-                      {/* user information */}
-                      <DisclosureButton className="group flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base/7 text-gray-900 hover:bg-gray-50">
-                        <div className="flex">
-                          <Avatar img={currentUser.image} rounded></Avatar>
-                          <div className="text-left ml-2 max-w-[16rem]">
-                            <span className="block truncate text-sm font-medium">
-                              {currentUser.name}
-                            </span>
-                            <span className="block truncate text-sm font-small">
-                              {currentUser.email}
-                            </span>
-                          </div>
-                        </div>
-                        <ChevronDownIcon
-                          aria-hidden="true"
-                          className="size-5 flex-none group-data-[open]:rotate-180"
-                        />
-                      </DisclosureButton>
-                      {/* items nav */}
-                      <DisclosurePanel className="mt-2 space-y-2">
-                        {userNavigation.map((item, index) => (
-                          <span
-                            key={`userNav_${index}`}
-                            className={
-                              "block rounded-lg py-2 pl-6 pr-3 text-sm/7 font-semibold hover:bg-gray-50 " +
-                              (item.name === "Logout"
-                                ? "text-red-500"
-                                : "text-gray-900")
-                            }
-                            onClick={(ev) => {
-                              item.handleClickEvent(ev);
-                              setMobileMenuOpen(false);
-                            }}
-                          >
-                            {item.name}
-                          </span>
-                        ))}
-                      </DisclosurePanel>
-                    </Disclosure>
-                  )}
-                  {!userToken && (
-                    <div className="flex flex-rows justify-center gap-x-12">
-                      <Link
-                        to="/login"
-                        className="flex items-center text-blue-700 font-medium"
-                      >
-                        <ArrowRightEndOnRectangleIcon className="size-6 mr-2"></ArrowRightEndOnRectangleIcon>
-                        Login
-                      </Link>
-                      <Link
-                        to="/signup"
-                        className="flex items-center text-blue-700 font-medium"
-                      >
-                        <ArrowUpTrayIcon className="size-5 mr-2"></ArrowUpTrayIcon>
-                        Sign Up
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </DialogPanel>
-        </Dialog>
-      </header>
+      </div>
 
       {/* Element Link */}
       <a id="link_profile" href="/profile" className="hidden"></a>

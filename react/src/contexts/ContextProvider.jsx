@@ -15,10 +15,13 @@ const StateContext = createContext({
   surveys: [],
   questionTypes: [],
   boxToast: [],
+  showToast: () => {},
   showDialog: () => {},
   urlRedirect: null,
   cart: [],
   updateCart: () => {},
+  newItemAddCart: false,
+  setNewItemAddCart: () => {},
 });
 
 export const ContextProvider = ({ children }) => {
@@ -45,6 +48,7 @@ export const ContextProvider = ({ children }) => {
   const [urlRedirect, setUrlRedirect] = useState("/");
   const [userRole, setUserRole] = useState();
   const [cart, setCart] = useState([]);
+  const [newItemAddCart, setNewItemAddCart] = useState(false);
 
   // call api to get current user name and load cart in localstorage
   useEffect(() => {
@@ -54,7 +58,7 @@ export const ContextProvider = ({ children }) => {
         .then(({ data }) => {
           const userName = data.user.user_name;
           if (userName) {
-            setCart(JSON.parse(localStorage.getItem(`cart_${userName}`)));
+            setCart(JSON.parse(localStorage.getItem(`cart_${userName}`)) || []);
           }
         })
         .catch((err) => {
@@ -64,6 +68,9 @@ export const ContextProvider = ({ children }) => {
   }, []);
 
   const updateCart = (newCart) => {
+    if(!userToken){
+      navigateR('/login');
+    }
     setCart(newCart);
     localStorage.setItem(
       `cart_${currentUser.user_name}`,
@@ -110,7 +117,7 @@ export const ContextProvider = ({ children }) => {
   };
 
   const checkUserRole = () => {
-    const roles = ["Seller", "Admin"];
+    const roles = ["Member", "Seller", "Admin"];
     axiosClient
       .get("/me")
       .then(({ data }) => {
@@ -180,6 +187,8 @@ export const ContextProvider = ({ children }) => {
         showDialog,
         cart,
         updateCart,
+        newItemAddCart,
+        setNewItemAddCart,
       }}
     >
       {children}

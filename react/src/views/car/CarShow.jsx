@@ -9,7 +9,7 @@ import { useParams } from "react-router-dom";
 import { useStateContext } from "../../contexts/ContextProvider";
 
 export default function CarShow() {
-  const { navigateR } = useStateContext();
+  const { navigateR, cart, updateCart, setNewItemAddCart } = useStateContext();
   const [car, setCar] = useState({});
   const { id } = useParams();
 
@@ -35,6 +35,36 @@ export default function CarShow() {
       navigateR("/cars");
     }
   }, []);
+
+  const onClickAddToCart = () => {
+    var isUpdate = false;
+    cart.map((item) => {
+      if (item.id === car.id) {
+        isUpdate = true;
+        return;
+      }
+    });
+
+    if (isUpdate) {
+      updateCart(
+        cart.map((item) =>
+          item.id === car.id ? { ...item, amount: item.amount + 1 } : item
+        )
+      );
+    } else {
+      updateCart([
+        ...cart,
+        {
+          id: car.id,
+          img_url: car.img_url,
+          slug: car.slug,
+          price: car.price,
+          amount: 1,
+        },
+      ]);
+    }
+    setNewItemAddCart(true);
+  };
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -147,7 +177,7 @@ export default function CarShow() {
                       </a>
                     </div>
                   </div>
-                  <form className="mt-10">
+                  <div className="mt-10">
                     {/* Colors */}
                     <div>
                       <h3 className="text-sm font-medium text-gray-900">
@@ -183,12 +213,12 @@ export default function CarShow() {
                       </fieldset>
                     </div>
                     <button
-                      type="submit"
+                      onClick={onClickAddToCart}
                       className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                       Add to bag
                     </button>
-                  </form>
+                  </div>
                 </div>
 
                 <div className="py-10 lg:col-span-2 lg:col-start-1 lg:border-r lg:border-gray-200 lg:pb-16 lg:pr-8 lg:pt-6">

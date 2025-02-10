@@ -18,6 +18,10 @@ import CarCreate from "./views/car/CarCreate";
 import UserCars from "./views/car/UserCars";
 import SeedPage from "./views/user/SeedPage";
 import CarEdit from "./views/car/CarEdit";
+import Checkout from "./views/payment/Checkout";
+import LoginGoogle from "./views/LoginGoogle";
+import Policy from "./views/Policy";
+import Contact from "./views/Contact";
 
 const router = createBrowserRouter([
   // main layout and route
@@ -32,6 +36,14 @@ const router = createBrowserRouter([
       {
         path: '/home',
         element: <Home />,
+      },
+      {
+        path: '/policy',
+        element: <Policy />,
+      },
+      {
+        path: '/contact',
+        element: <Contact />,
       },
       {
         path: "/profile",
@@ -64,6 +76,10 @@ const router = createBrowserRouter([
       {
         path: "/your-cars",
         element: <UserCars />,
+      },
+      {
+        path: "/checkout",
+        element: <Checkout />,
       },
     ],
   },
@@ -102,6 +118,10 @@ const router = createBrowserRouter([
       {
         path: "/signup",
         element: <SignUp />,
+      },
+      {
+        path: "/auth/google",
+        element: <LoginGoogle />,
       },
     ],
   },

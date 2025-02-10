@@ -34,8 +34,8 @@ export default function Login() {
 
   return (
     <>
-      <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-        Sign in to your account
+      <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-indigo-700">
+        Login to your account
       </h2>
 
       {/* render error */}
@@ -52,7 +52,7 @@ export default function Login() {
           onSubmit={onSubmit}
           action="#"
           method="POST"
-          className="space-y-6"
+          className="space-y-4"
         >
           {/* display error */}
           <div className="text-red-500 text-center">

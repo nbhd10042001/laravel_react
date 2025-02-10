@@ -10,7 +10,7 @@ import axiosClient from "../../axios";
 import { useStateContext } from "../../contexts/ContextProvider";
 
 export default function CarItem({ car, haveEdit }) {
-  const { showToast, cart, updateCart } = useStateContext();
+  const { showToast, cart, updateCart, setNewItemAddCart } = useStateContext();
 
   const onClickEditCar = () => {
     window.location.href = `/car/${car.id}/edit`;
@@ -53,6 +53,7 @@ export default function CarItem({ car, haveEdit }) {
         },
       ]);
     }
+    setNewItemAddCart(true);
   };
 
   return (

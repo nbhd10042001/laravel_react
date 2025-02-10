@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\RoleTypeEnum;
+use App\Http\Controllers\Api\Auth\GoogleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\DashboardController;
@@ -36,6 +37,10 @@ Route::middleware([Cors::class])->group(function () {
     // laravel will try to query survey by slug (following type model Survey) 
     Route::get('/survey/get-by-slug/{survey:slug}', [SurveyController::class, 'getBySlug']);
     Route::post('/survey/{survey}/answer', [SurveyController::class, 'storeAnswer']);
+
+    // api for client google
+    Route::get('/auth/google/redirect', [GoogleController::class, 'googleLoginRedirect']);
+    Route::get('/auth/google/callback', [GoogleController::class, 'googleLoginCallback']);
 });
 
 Route::get('/cars', [CarController::class, 'index']);

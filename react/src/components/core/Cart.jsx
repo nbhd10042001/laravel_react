@@ -1,17 +1,32 @@
-import { ShoppingCartIcon } from "@heroicons/react/24/outline";
-import { ShoppingBagIcon } from "@heroicons/react/24/solid";
+import {
+  ArchiveBoxIcon,
+  ArrowDownIcon,
+  ShoppingBagIcon,
+} from "@heroicons/react/24/solid";
 import { Button, Drawer } from "flowbite-react";
-import React, { useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ItemCart from "./ItemCart";
 import { useStateContext } from "../../contexts/ContextProvider";
 
 export default function Cart() {
+  const timer = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const handleClose = () => setIsOpen(false);
-  const { cart, updateCart } = useStateContext();
+  const { cart, updateCart, newItemAddCart, setNewItemAddCart, navigateR } =
+    useStateContext();
   const clearAllItemInCart = () => {
     updateCart([]);
   };
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    setCurrent(60);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      setCurrent(0);
+      setNewItemAddCart(false);
+    }, 700);
+  }, [cart]);
 
   return (
     <div>
@@ -46,15 +61,21 @@ export default function Cart() {
             <div className="grid grid-cols-2 mt-2 font-medium">
               <span className="">Subtotal: </span>
               <span className="justify-self-end">
-                {cart.reduce((acc, item) => acc + item.price * item.amount, 0)}
-                $
+                {cart.reduce((acc, item) => acc + item.price * item.amount, 0)}$
               </span>
             </div>
             <span className="text-sm text-gray-600">
               Shipping and taxes calculated at checkout.
             </span>
             <div className="mt-4 grid grid-rows-2 gap-2">
-              <Button className="bg-blue-800 hover:bg-blue-500 hover:text-white w-full">
+              <Button
+                onClick={() => {
+                  setIsOpen(false);
+                  navigateR("/checkout");
+                }}
+                className="bg-blue-800 hover:bg-blue-500 hover:text-white w-full"
+                disabled={cart.length > 0 ? false : true}
+              >
                 Checkout
               </Button>
               <div className="flex justify-center">
@@ -70,7 +91,7 @@ export default function Cart() {
         </Drawer.Items>
       </Drawer>
 
-      <div id="cart-icon" className="w-14 h-14 fixed left-6 bottom-6 z-30">
+      <div id="cart-icon" className="w-14 h-14 fixed left-6 bottom-6 z-10">
         <Button
           className="bg-green-200 size-full"
           color="green"
@@ -78,6 +99,24 @@ export default function Cart() {
         >
           <ShoppingBagIcon></ShoppingBagIcon>
         </Button>
+        {cart.length > 0 && (
+          <div className="absolute -top-2 -right-2 z-20 rounded-3xl border-red-400 bg-red-400 px-2">
+            <span className="text-gray-100 text-sm font-medium">
+              {cart.length}
+            </span>
+          </div>
+        )}
+        <div className="absolute -top-32 h-32 w-full">
+          {newItemAddCart && (
+            <div
+              className="relative flex flex-col items-center transform transition duration-30"
+              style={{ transform: `translateY(${current}px)` }}
+            >
+              <ArrowDownIcon className="w-7 h-7 text-green-600"></ArrowDownIcon>
+              <ArchiveBoxIcon className="w-7 h-7 text-green-600"></ArchiveBoxIcon>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
