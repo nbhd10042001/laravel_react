@@ -22,6 +22,8 @@ import Checkout from "./views/payment/Checkout";
 import LoginGoogle from "./views/LoginGoogle";
 import Policy from "./views/Policy";
 import Contact from "./views/Contact";
+import SuccessVNPay from "./views/payment/SuccessVNPay";
+import OrderSuccess from "./views/order/OrderSuccess";
 
 const router = createBrowserRouter([
   // main layout and route
@@ -81,6 +83,10 @@ const router = createBrowserRouter([
         path: "/checkout",
         element: <Checkout />,
       },
+      {
+        path: "/order/success",
+        element: <OrderSuccess />,
+      },
     ],
   },
   // AdminLayout and route admin
@@ -105,6 +111,10 @@ const router = createBrowserRouter([
         element: <SurveyView />,
       },
     ],
+  },
+  {
+    path: '/vnpay-success',
+    element: <SuccessVNPay />,
   },
   // GuestLayout and route login/signup
   {

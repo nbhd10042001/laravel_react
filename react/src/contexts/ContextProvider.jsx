@@ -22,6 +22,10 @@ const StateContext = createContext({
   updateCart: () => {},
   newItemAddCart: false,
   setNewItemAddCart: () => {},
+  detailOrder: null,
+  setDetailOrder: () => {},
+  paymentSuccess: false,
+  setPaymentSuccess: () => {},
 });
 
 export const ContextProvider = ({ children }) => {
@@ -49,6 +53,8 @@ export const ContextProvider = ({ children }) => {
   const [userRole, setUserRole] = useState();
   const [cart, setCart] = useState([]);
   const [newItemAddCart, setNewItemAddCart] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [detailOrder, _setDetailOrder] = useState(null);
 
   // call api to get current user name and load cart in localstorage
   useEffect(() => {
@@ -68,14 +74,18 @@ export const ContextProvider = ({ children }) => {
   }, []);
 
   const updateCart = (newCart) => {
-    if(!userToken){
-      navigateR('/login');
+    if (!userToken) {
+      navigateR("/login");
     }
     setCart(newCart);
     localStorage.setItem(
       `cart_${currentUser.user_name}`,
       JSON.stringify(newCart)
     );
+  };
+
+  const setDetailOrder = (payload) => {
+    console.log(payload);
   };
 
   const navigateR = (
@@ -99,7 +109,7 @@ export const ContextProvider = ({ children }) => {
       localStorage.removeItem("TOKEN");
     }
     _setUserToken(token);
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   const updateCurrentUser = () => {
@@ -189,6 +199,10 @@ export const ContextProvider = ({ children }) => {
         updateCart,
         newItemAddCart,
         setNewItemAddCart,
+        detailOrder,
+        setDetailOrder,
+        paymentSuccess,
+        setPaymentSuccess,
       }}
     >
       {children}

@@ -27,7 +27,7 @@ export default function Policy() {
               2. Information We May or May Not Collect
             </h1>
             <p>We may or may not collect the following types of information:</p>
-            <ul class="list-disc text-left list-inside">
+            <ul className="list-disc text-left list-inside">
               <li>
                 Personal Data: Your name, email address, and other details you
                 voluntarily provide.
@@ -47,7 +47,7 @@ export default function Policy() {
               Any data we collect (if any) might be used for the following
               purposes:
             </p>
-            <ul class="list-disc text-left list-inside">
+            <ul className="list-disc text-left list-inside">
               <li>To pretend we have an analytics system.</li>
               <li>To give an illusion of a sophisticated user experience.</li>
               <li>To make our website look more professional.</li>
@@ -58,7 +58,7 @@ export default function Policy() {
               4. Third-Party Sharing (Which Probably Won’t Happen)
             </h1>
             <p>We may or may not share your data with:</p>
-            <ul class="list-disc text-left list-inside">
+            <ul className="list-disc text-left list-inside">
               <li>Imaginary marketing partners.</li>
               <li>Government agencies (only if they bribe us with pizza).</li>
               <li>Hackers (just kidding… or are we?).</li>

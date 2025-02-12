@@ -1,15 +1,14 @@
 <?php
 
-use App\Enums\RoleTypeEnum;
 use App\Http\Controllers\Api\Auth\GoogleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Middleware\Cors;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -83,3 +82,5 @@ Route::post('/seed-user-admin', function () {
 
     return response('', 200);
 });
+
+Route::get('/vnpay', [PaymentController::class, 'VNPayMethod']);
