@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\GoogleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Middleware\Cors;
@@ -29,6 +30,9 @@ Route::middleware([Cors::class])->group(function () {
         Route::get('/user-cars', [CarController::class, 'userCars']);
         Route::get('/user-cars-filter', [CarController::class, 'filterCars']);
         Route::get('/seed-cars', [CarController::class, 'seedCars']);
+        Route::apiResource('order', OrderController::class);
+        Route::get('/my-orders', [OrderController::class, 'getOrders']);
+
     });
 
     Route::post('/signup', [AuthController::class, 'signup']);

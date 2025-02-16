@@ -24,6 +24,8 @@ import Policy from "./views/Policy";
 import Contact from "./views/Contact";
 import SuccessVNPay from "./views/payment/SuccessVNPay";
 import OrderSuccess from "./views/order/OrderSuccess";
+import Orders from "./views/order/Orders";
+import OrderShow from "./views/order/OrderShow";
 
 const router = createBrowserRouter([
   // main layout and route
@@ -86,6 +88,14 @@ const router = createBrowserRouter([
       {
         path: "/order/success",
         element: <OrderSuccess />,
+      },
+      {
+        path: "/orders",
+        element: <Orders />,
+      },
+      {
+        path: "/orders/:id/show",
+        element: <OrderShow />,
       },
     ],
   },

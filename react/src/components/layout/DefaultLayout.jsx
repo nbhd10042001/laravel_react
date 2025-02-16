@@ -20,6 +20,7 @@ import {
   FingerPrintIcon,
   IdentificationIcon,
   PlusCircleIcon,
+  ShoppingBagIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -114,6 +115,14 @@ export default function DefaultLayout() {
         document.getElementById("link_profile").click();
       },
       icon: IdentificationIcon,
+    },
+    {
+      name: "Your Orders",
+      href: "",
+      handleClickEvent: (event) => {
+        document.getElementById("link_orders").click();
+      },
+      icon: ShoppingBagIcon,
     },
     {
       roles: ["Seller", "Admin"],
@@ -419,15 +428,16 @@ export default function DefaultLayout() {
                                     userNav.handleClickEvent(event);
                                   }}
                                 >
-                                  <span
-                                    className={
+                                  <div
+                                    className={`flex gap-2 items-center ${
                                       userNav.name === "Logout"
                                         ? "text-red-500 font-medium"
                                         : ""
-                                    }
+                                    }`}
                                   >
-                                    {userNav.name}
-                                  </span>
+                                    <userNav.icon className="size-5"></userNav.icon>
+                                    <span>{userNav.name}</span>
+                                  </div>
                                 </Sidebar.Item>
                               </div>
                             );
@@ -470,6 +480,7 @@ export default function DefaultLayout() {
 
       {/* Element Link */}
       <a id="link_profile" href="/profile" className="hidden"></a>
+      <a id="link_orders" href="/orders" className="hidden"></a>
       <a id="link_adminboard" href="/dashboard" className="hidden"></a>
 
       {/* Body */}

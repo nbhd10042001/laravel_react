@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import CarLists from "../../components/car/CarLists";
+import CarGridLists from "../../components/car/CarGridLists";
 import axiosClient from "../../axios";
 import PaginationLinks from "../../components/PaginationLinks";
 import { useStateContext } from "../../contexts/ContextProvider";
@@ -80,7 +80,7 @@ export default function Cars() {
       userId={''}
     >
       <div>
-        {cars.length > 0 && <CarLists cars={cars}></CarLists>}
+        {cars.length > 0 && <CarGridLists cars={cars}></CarGridLists>}
         {cars.length === 0 && (
           <div className="text-center font-medium my-24">Cars not found...</div>
         )}

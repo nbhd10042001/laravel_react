@@ -2,8 +2,17 @@ import React, { useEffect, useRef } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useStateContext } from "./contexts/ContextProvider";
 
-const PaypalButtonComponent = ({ onAddDetailOrder = () => {} }) => {
+const PaypalButtonComponent = ({ onAddDetailOrder = () => {}, hasPhone }) => {
   const { setPaymentSuccess } = useStateContext();
+
+  if(!hasPhone){
+    return (
+      <button className="w-full rounded-[50px] text-center border-2 py-2 border-gray-700">
+        Need fill Phone Number field...
+      </button>
+    )
+  }
+
   const initialOptions = {
     "client-id":
       "AYM3e5qNwMczrecVhG2RbFYZMf9S0sCzFNvl32K1Q9HKqhxnQrDPhwJ5GpNJXSbzS84umuMTm9rHG7Pj",

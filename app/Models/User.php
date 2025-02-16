@@ -74,6 +74,11 @@ class User extends Authenticatable
         return $this->hasMany(Car::class);
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(

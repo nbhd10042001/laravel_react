@@ -85,7 +85,16 @@ export const ContextProvider = ({ children }) => {
   };
 
   const setDetailOrder = (payload) => {
-    console.log(payload);
+    axiosClient
+      .post("/order", payload)
+      .then(({data}) => {
+        _setDetailOrder(data.data)
+        setPaymentSuccess(true);
+        updateCart([]);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   };
 
   const navigateR = (

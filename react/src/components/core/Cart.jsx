@@ -7,6 +7,7 @@ import { Button, Drawer } from "flowbite-react";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ItemCart from "./ItemCart";
 import { useStateContext } from "../../contexts/ContextProvider";
+import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 
 export default function Cart() {
   const timer = useRef(null);
@@ -97,7 +98,7 @@ export default function Cart() {
           color="green"
           onClick={() => setIsOpen(true)}
         >
-          <ShoppingBagIcon></ShoppingBagIcon>
+          <ShoppingCartIcon></ShoppingCartIcon>
         </Button>
         {cart.length > 0 && (
           <div className="absolute -top-2 -right-2 z-20 rounded-3xl border-red-400 bg-red-400 px-2">
@@ -106,8 +107,8 @@ export default function Cart() {
             </span>
           </div>
         )}
-        <div className="absolute -top-32 h-32 w-full">
-          {newItemAddCart && (
+        {newItemAddCart && (
+          <div className="absolute -top-32 h-32 w-full">
             <div
               className="relative flex flex-col items-center transform transition duration-30"
               style={{ transform: `translateY(${current}px)` }}
@@ -115,8 +116,8 @@ export default function Cart() {
               <ArrowDownIcon className="w-7 h-7 text-green-600"></ArrowDownIcon>
               <ArchiveBoxIcon className="w-7 h-7 text-green-600"></ArchiveBoxIcon>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
