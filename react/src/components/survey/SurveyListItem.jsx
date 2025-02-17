@@ -22,12 +22,12 @@ export default function SurveyListItem({ survey, onDeleteClick }) {
         ></div>
 
         <div className="flex justify-between items-center mt-3">
-          <TButton to={`/surveys/${survey.id}`}>
+          <TButton to={`/admin/surveys/${survey.id}`}>
             <PencilIcon className="w-5 h-5 mr-2"></PencilIcon>
             Edit
           </TButton>
           <div className="flex items-center">
-            <TButton href={`/view/survey/${survey.slug}`} circle link>
+            <TButton href={`/survey/public/${survey.slug}`} circle link>
               <ArrowTopRightOnSquareIcon className="w-5 h-5"></ArrowTopRightOnSquareIcon>
             </TButton>
 

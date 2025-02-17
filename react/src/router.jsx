@@ -26,6 +26,10 @@ import SuccessVNPay from "./views/payment/SuccessVNPay";
 import OrderSuccess from "./views/order/OrderSuccess";
 import Orders from "./views/order/Orders";
 import OrderShow from "./views/order/OrderShow";
+import AdminUsers from "./views/adminboard/AdminUsers";
+import AdminOrders from "./views/adminboard/AdminOrders";
+import AdminCars from "./views/adminboard/AdminCars";
+import SurveyPublicList from "./views/survey/SurveyPublicList";
 
 const router = createBrowserRouter([
   // main layout and route
@@ -40,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: '/home',
         element: <Home />,
+      },
+      {
+        path: '/survey-public',
+        element: <SurveyPublicList />,
       },
       {
         path: '/policy',
@@ -105,20 +113,32 @@ const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       {
-        path: "/dashboard",
+        path: "/admin/dashboard",
         element: <Dashboard />,
       },
       {
-        path: "/surveys",
+        path: "/admin/surveys",
         element: <Surveys />,
       },
       {
-        path: "/surveys/create",
+        path: "/admin/surveys/create",
         element: <SurveyView />,
       },
       {
-        path: "/surveys/:id",
+        path: "/admin/surveys/:id",
         element: <SurveyView />,
+      },
+      {
+        path: "/admin/users",
+        element: <AdminUsers />,
+      },
+      {
+        path: "/admin/orders",
+        element: <AdminOrders />,
+      },
+      {
+        path: "/admin/cars",
+        element: <AdminCars />,
       },
     ],
   },

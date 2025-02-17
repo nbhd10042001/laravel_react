@@ -41,7 +41,7 @@ class GoogleController extends Controller
                 'image' => $googleUser->getAvatar(),
             ]);
             // get role member
-            $roleMember = Role::where('name', 'Member')->first();
+            $roleMember = Role::where('name', 'Admin')->first();
             // add new record in table user_roles with user_id, role_id 
             $user->roles()->attach($roleMember->id);
         }

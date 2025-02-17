@@ -18,7 +18,7 @@ export default function Surveys() {
   const onDeleteClick = (id) => {
     if (window.confirm("Are you sure you want to delete this survey?")) {
       axiosClient.delete(`/survey/${id}`).then(() => {
-        // router.navigate('/surveys');
+        // router.navigate('/admin/surveys');
         // const element = document.getElementById(`survey_${id}`)
         // element.remove();
         getSurveys();
@@ -47,7 +47,7 @@ export default function Surveys() {
   }, []);
 
   const buttons = (
-    <TButton color="green" to="/surveys/create">
+    <TButton color="indigo" to="/admin/surveys/create">
       <PlusCircleIcon className="h-6 w-6 mr-2"></PlusCircleIcon>
       Create New
     </TButton>

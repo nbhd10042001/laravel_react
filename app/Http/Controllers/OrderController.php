@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\OrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use Gate;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -14,7 +15,13 @@ class OrderController extends Controller
      */
     public function index()
     {
-        //
+        Gate::authorize('is-admin');
+
+        return OrderResource::collection(
+            Order::with(['owner', 'car'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10)
+        );
     }
 
     /**

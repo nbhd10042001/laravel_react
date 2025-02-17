@@ -23,8 +23,8 @@ class UserSeeder extends Seeder
         });
 
         // create new users
-        $users = User::factory()->count(5)->sequence(fn(Sequence $sequence) => [
-            'user_name' => 'seller' . ($sequence->index % 5 + 1),
+        $users = User::factory()->count(20)->sequence(fn(Sequence $sequence) => [
+            'user_name' => 'seller' . ($sequence->index),
         ])->create();
 
         // attach role users

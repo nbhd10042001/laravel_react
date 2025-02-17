@@ -27,7 +27,13 @@ class CarSeeder extends Seeder
 
         $path = '/images/car/car_image_seed/';
         $files = Storage::disk('public')->allFiles($path);
-        $lastUserId = User::orderBy('id', 'DESC')->first()->id;
+        
+        $lastUser = User::orderBy('id', 'DESC')->first();
+        if ($lastUser == null) {
+            $lastUserId = 0;
+        } else {
+            $lastUserId = $lastUser->id;
+        }
         $newId = $lastUserId + 1;
         // error_log('id: '.$newId);
 
@@ -35,10 +41,10 @@ class CarSeeder extends Seeder
 
         User::factory()
             ->state([
-                'name' => fake()->name() . "[Seed]",
-                'user_name' => 'user_seed',
-                'id' => $newId
-            ])
+                    'name' => fake()->name() . "[Seed]",
+                    'user_name' => 'user_seed',
+                    'id' => $newId
+                ])
             ->has(
                 Car::factory()
                     ->count(50)

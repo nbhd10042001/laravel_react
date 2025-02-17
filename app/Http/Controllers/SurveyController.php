@@ -179,7 +179,15 @@ class SurveyController extends Controller
         return response('', 204);
     }
 
-    // other method
+    // other method ------------------------------------------
+    public function getSurveyPublic()
+    {
+        $surveys = Survey::where('status', 1)
+            ->with(['questions', 'answers'])
+            ->orderBy('created_at', 'desc')->paginate(9);
+        return SurveyResource::collection($surveys);
+    }
+
     public function getBySlug(Survey $survey)
     {
         if (!$survey) {
@@ -214,7 +222,7 @@ class SurveyController extends Controller
                 ], 422);
             }
             // remove answer if not require and value null
-            if(!$answer['is_require'] && !$answer['value']) {
+            if (!$answer['is_require'] && !$answer['value']) {
                 unset($validated['answers'][$key]);
             }
         }
@@ -257,10 +265,23 @@ class SurveyController extends Controller
             });
 
         // seed surveys fake with current user_id send this request
-        Survey::factory()->count(10)
-            ->state(['user_id' => $user->id])
-            ->create();
+        for ($i = 0; $i < 10; $i++) {
+            $survey = Survey::factory()
+                ->state(['user_id' => $user->id])
+                ->create();
+            SurveyQuestion::create([
+                'type' => 'text',
+                'question' => 'question text',
+                'description' => 'question fake - question fake  - question fake -question fake',
+                'data' => '[]',
+                'is_require' => 1,
+                'survey_id' => $survey->id
+            ]);
+        }
 
+        // Survey::factory()->count(10)
+        // ->state(['user_id' => $user->id])
+        // ->create();
         return response('', 204);
     }
 

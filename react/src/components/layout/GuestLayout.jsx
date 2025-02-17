@@ -7,9 +7,12 @@ import axiosClient from "../../axios";
 export default function GuestLayout() {
   const [googleLoginRedirect, setGoogleLoginRedirect] = useState("");
   const { userToken } = useStateContext();
-  if (userToken) {
-    return <Navigate to="/"></Navigate>;
-  }
+
+  useEffect(() => {
+    if (userToken) {
+      return <Navigate to="/"></Navigate>;
+    }
+  }, [userToken]);
 
   useEffect(() => {
     axiosClient

@@ -61,7 +61,7 @@ export default function SurveyView() {
 
     response
       .then((res) => {
-        navigateR("/surveys");
+        navigateR("/admin/surveys");
         if (id) {
           showToast("The survey was updated!", "success");
         } else {

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import axiosClient from "../../axios";
 import QuestionPublicView from "../question/QuestionPublicView";
 import router from "../../router";
+import { Button } from "flowbite-react";
 
 export default function SurveyPublicView() {
   const [survey, setSurvey] = useState({});
@@ -18,20 +19,29 @@ export default function SurveyPublicView() {
       setSurvey(data.data);
       setLoading(false);
       data.data.questions.map((question, index) => {
-        answers[index] = {ques_id: question.id, is_require: question.is_require, value: null}
+        answers[index] = {
+          ques_id: question.id,
+          is_require: question.is_require,
+          value: null,
+        };
       });
     });
   }, []);
 
   const onAnswerChanged = (question, value, index) => {
-    answers[index] = {ques_id: question.id, is_require: question.is_require, value: value };
+    answers[index] = {
+      ques_id: question.id,
+      is_require: question.is_require,
+      value: value,
+    };
     // console.log(question, value);
     // console.log(answers);
   };
 
   function onSubmit(ev) {
     ev.preventDefault();
-    axiosClient.post(`/survey/${survey.id}/answer`, {
+    axiosClient
+      .post(`/survey/${survey.id}/answer`, {
         answers,
       })
       .then((response) => {
@@ -79,8 +89,19 @@ export default function SurveyPublicView() {
 
             {/* Finish Survey */}
             {surveyFinished && (
-              <div className="p-4 m-2 bg-emerald-500 text-white text-center text-[20px]">
+              <div className="p-4 m-2 bg-gray-500 text-white text-center text-[20px]">
                 Thank you for participating in the survey
+                <div className="flex justify-center mt-4">
+                  <Button
+                    color="blue"
+                    onClick={() => {
+                      // window.location.href = "/";
+                      window.close();
+                    }}
+                  >
+                    Close Survey
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -96,9 +117,11 @@ export default function SurveyPublicView() {
                           key={question.id}
                           question={question}
                           index={index}
-                          answerChanged={(val) =>{
+                          answerChanged={(val) => {
                             onAnswerChanged(question, val, index);
-                            document.getElementById(`err_ques_${question.id}`).innerHTML = "";
+                            document.getElementById(
+                              `err_ques_${question.id}`
+                            ).innerHTML = "";
                           }}
                         ></QuestionPublicView>
                       );

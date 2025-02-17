@@ -28,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
             return $user->roles[0]->name == 'Admin' ? true : false;
         });
 
+        Gate::define('is-member', function (User $user) {
+            return $user->roles[0]->name == 'Member' ? true : false;
+        });
+
         Gate::policy(Survey::class, SurveyPolicy::class);
     }
 }

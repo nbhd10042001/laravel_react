@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\Cors;
 use App\Models\Role;
 use App\Models\User;
@@ -19,10 +20,11 @@ Route::middleware([Cors::class])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/seedsurveys', [SurveyController::class, 'seedSurveys'])
             ->middleware('can:is-admin');
-        Route::get('/me', [AuthController::class, 'me']);
-        Route::get('/profile/{name?}', [AuthController::class, 'profile']);
-        Route::put('/profile/edit/{user:user_name}', [AuthController::class, 'updateProfile']);
+        Route::get('/me', [UserController::class, 'me']);
+        Route::get('/profile/{name?}', [UserController::class, 'profile']);
+        Route::put('/profile/edit/{user:user_name}', [UserController::class, 'updateProfile']);
         Route::apiResource('survey', SurveyController::class);
+        Route::get('/admin/users', [UserController::class, 'getAllUser']);
         Route::apiResource('car', CarController::class)->except([
             'index',
         ]);
@@ -51,6 +53,7 @@ Route::get('/car-show/{car}', [CarController::class, 'show']);
 Route::get('/cars/filter', [CarController::class, 'filterCars']);
 Route::get('/search-cars', [CarController::class, 'searchCar']);
 Route::get('/get-new-cars', [CarController::class, 'newCars']);
+Route::get('/get-survey-public', [SurveyController::class, 'getSurveyPublic']);
 
 Route::post('/csrf-token', function () {
     // refresh csrf token

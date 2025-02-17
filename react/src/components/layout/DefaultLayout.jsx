@@ -54,7 +54,7 @@ const navigates = [
   },
   {
     nameNav: "Surveys",
-    to: "/surveys",
+    to: "/survey-public",
     itemNav: null,
   },
   {
@@ -68,7 +68,7 @@ const navigates = [
     to: "/policy",
   },
   {
-    roles: ["Seller", "Admin", "Member"],
+    roles: ["Seller", "Admin"],
     nameNav: "Manage",
     itemNav: [
       {
@@ -481,7 +481,7 @@ export default function DefaultLayout() {
       {/* Element Link */}
       <a id="link_profile" href="/profile" className="hidden"></a>
       <a id="link_orders" href="/orders" className="hidden"></a>
-      <a id="link_adminboard" href="/dashboard" className="hidden"></a>
+      <a id="link_adminboard" href="/admin/dashboard" className="hidden"></a>
 
       {/* Body */}
       <div className=" mt-[5rem]">
