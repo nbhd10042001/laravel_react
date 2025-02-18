@@ -1,11 +1,14 @@
 # Paypal account sandbox
-sb-oieui31419563@personal.example.com
-j2}>I6Qm
->> link: https://developer.paypal.com/dashboard
+>email: sb-oieui31419563@personal.example.com
+>password: j2}>I6Qm
+
 
 # VNPay account sandbox
-NCB
-9704198526191432198
-NGUYEN VAN A
-07/15
-123456
+>Bank: NCB
+>Seri: 9704198526191432198
+>Name: NGUYEN VAN A
+>Date: 07/15
+>OTP: 123456
+
+# Link Dashboard Paypal
+>> link: https://developer.paypal.com/dashboard
